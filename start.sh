@@ -171,9 +171,81 @@ if [ $? -eq 0 ]; then
                 curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > certbot/conf/options-ssl-nginx.conf
                 curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > certbot/conf/ssl-dhparams.pem
                 
-                # Odkomentuj konfigurację HTTPS w pliku Nginx
-                sed -i 's/# server {/server {/g' nginx/conf.d/default.conf
-                sed -i 's/#     /    /g' nginx/conf.d/default.conf
+                # Użyj własciwej konfiguracji Nginx z włączonym HTTPS
+                cp nginx/conf.d/default.conf nginx/conf.d/default.conf.bak
+                cat > nginx/conf.d/default.conf << EOF
+server {
+    listen 80;
+    server_name casiopea.piwo.org localhost 127.0.0.1 192.168.0.101;
+    
+    # Punkt weryfikacji Let's Encrypt - to musi być przed innymi lokalizacjami
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        try_files \$uri =404;
+    }
+    
+    location / {
+        root /usr/share/nginx/html;
+        index index.php index.html index.htm;
+        try_files \$uri \$uri/ /index.php?\$query_string;
+    }
+    
+    # PHP
+    location ~ \.php$ {
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass php:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_param PATH_INFO \$fastcgi_path_info;
+    }
+    
+    # Deny .htaccess
+    location ~ /\.ht {
+        deny all;
+    }
+}
+
+# Serwer HTTPS
+server {
+    listen 443 ssl;
+    server_name casiopea.piwo.org;
+    
+    # Certyfikaty SSL/TLS
+    ssl_certificate /etc/letsencrypt/live/casiopea.piwo.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/casiopea.piwo.org/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+    
+    root /usr/share/nginx/html;
+    index index.php index.html index.htm;
+    
+    location / {
+        try_files \$uri \$uri/ /index.php?\$query_string;
+    }
+    
+    # PHP
+    location ~ \.php$ {
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass php:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_param PATH_INFO \$fastcgi_path_info;
+    }
+    
+    # Deny .htaccess
+    location ~ /\.ht {
+        deny all;
+    }
+    
+    # Strony błędów
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+        root /usr/share/nginx/html;
+    }
+}
+EOF
                 
                 echo -e "${YELLOW}Restartowanie kontenerów, aby zastosować certyfikat...${NC}"
                 run_docker_compose restart nginx
