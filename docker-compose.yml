@@ -16,13 +16,13 @@ unifi-controller:
     - ./unifi/cert:/usr/lib/unifi/cert
     - ./unifi/init:/etc/cont-init.d
   ports:
-    - ${server_ip}:3478:3478/udp
-    - ${server_ip}:10001:10001/udp
-    - ${server_ip}:10001:10001/tcp
-    - ${server_ip}:8080:8080
-    - ${server_ip}:8443:8443
-    - ${server_ip}:1900:1900/udp #optional
-    - ${server_ip}:8843:8843 #optional
-    - ${server_ip}:8880:8880 #optional
-    - ${server_ip}:6789:6789 #optional
-    - ${server_ip}:5514:5514/udp #optional 
+    - 3478:3478/udp
+    - 10001:10001/udp
+    - 10001:10001/tcp
+    - 8080:8080
+    - 8443:8443
+    - 1900:1900/udp #optional
+    - 8843:8843 #optional
+    - 8880:8880 #optional
+    - 6789:6789 #optional
+    - 5514:5514/udp #optional 
