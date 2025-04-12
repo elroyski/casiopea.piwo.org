@@ -155,13 +155,15 @@ services:
     container_name: cassiopea-pihole
     image: pihole/pihole:latest
     ports:
-      - "53:53/tcp"
-      - "53:53/udp"
+      - "5353:53/tcp"
+      - "5353:53/udp"
       - "8888:80/tcp"
     environment:
       TZ: 'Europe/Warsaw'
       WEBPASSWORD: 'casiopea'
       SERVERIP: '192.168.0.101'
+      DNS1: '8.8.8.8'
+      DNS2: '1.1.1.1'
     volumes:
       - './pihole/etc:/etc/pihole'
       - './pihole/dnsmasq:/etc/dnsmasq.d'
@@ -228,7 +230,7 @@ if [ $? -eq 0 ]; then
     echo -e "${GREEN}Strona powinna być dostępna pod adresem: http://localhost${NC}"
     echo -e "${GREEN}Strona powinna być dostępna pod adresem: http://$domain${NC}"
     echo -e "${GREEN}Unifi Controller dostępny pod: https://$server_ip:8443 (bezpośredni dostęp)${NC}"
-    echo -e "${GREEN}Pi-hole dostępny pod: http://$server_ip:8888/admin (hasło: casiopea)${NC}"
+    echo -e "${GREEN}Pi-hole dostępny pod: http://$server_ip:8888/admin (hasło: casiopea) - DNS na porcie 5353${NC}"
 
     # Sprawdzenie dostępu do UniFi
     echo -e "${YELLOW}Sprawdzanie statusu Unifi Controller (może wymagać czasu na uruchomienie)...${NC}"
