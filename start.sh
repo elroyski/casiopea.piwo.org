@@ -7,9 +7,10 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Dane do konfiguracji Let's Encrypt
-domain="casiopea.piwo.org"
+domain="cassiopea.piwo.org"
+docker_project_name="cassiopeapiwoorg"  # Dodajemy zmienną dla nazwy projektu Docker
 rsa_key_size=4096
-email="admin@casiopea.piwo.org"  # Zmień na swój adres e-mail
+email="admin@cassiopea.piwo.org"  # Zmień na swój adres e-mail
 staging=0 # Ustaw na 1, aby testować konfigurację (nie generuje prawdziwych certyfikatów)
 setup_letsencrypt=1 # Ustaw na 0, aby pominąć konfigurację Let's Encrypt
 
@@ -21,7 +22,7 @@ if [ -d ".git" ]; then
     git pull origin master
 else
     # Jeśli repozytorium nie istnieje, wykonaj git clone
-    git clone https://github.com/elroyski/casiopea.piwo.org.git .
+    git clone https://github.com/elroyski/cassiopea.piwo.org.git .
 fi
 
 # Sprawdzanie czy Docker jest zainstalowany
@@ -46,21 +47,75 @@ fi
 # Funkcja do uruchamiania docker-compose
 run_docker_compose() {
     if [ $has_docker_compose_v1 -eq 1 ]; then
-        docker-compose "$@"
+        docker-compose -p $docker_project_name "$@"
     else
-        docker compose "$@"
+        docker compose -p $docker_project_name "$@"
     fi
 }
+
+# Sprawdzenie i zatrzymanie wszystkich kontenerów używających portu 80
+if docker ps | grep -q "80/tcp"; then
+    echo -e "${YELLOW}Wykryto inne kontenery używające portu 80. Próbuję je zatrzymać...${NC}"
+    docker ps -q -f "publish=80" | xargs -r docker stop
+    sleep 2
+fi
 
 # Tworzenie katalogów dla certbot przed uruchomieniem
 mkdir -p certbot/www/.well-known/acme-challenge
 mkdir -p certbot/conf
+mkdir -p nginx/conf.d
+
+# Upewniamy się, że skrypt znajdzie lub utworzy plik docker-compose.yml
+if [ ! -f "docker-compose.yml" ]; then
+    echo -e "${YELLOW}Plik docker-compose.yml nie istnieje. Tworzę domyślny plik...${NC}"
+    cat > docker-compose.yml << EOF
+version: '3'
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./www:/usr/share/nginx/html
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - php
+    restart: always
+    networks:
+      - casiopea-network
+
+  php:
+    image: php:8.2-fpm-alpine
+    volumes:
+      - ./www:/usr/share/nginx/html
+    restart: always
+    networks:
+      - casiopea-network
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    command: /bin/sh -c "trap exit TERM; while :; do certbot renew; sleep 12h & wait \$\${!}; done;"
+    networks:
+      - casiopea-network
+
+networks:
+  casiopea-network:
+    driver: bridge
+EOF
+fi
 
 # Upewniamy się, że nginx ma tylko konfigurację HTTP
 cat > nginx/conf.d/default.conf << EOF
 server {
     listen 80;
-    server_name casiopea.piwo.org localhost 127.0.0.1 192.168.0.101;
+    server_name cassiopea.piwo.org localhost 127.0.0.1;
     
     # Punkt weryfikacji Let's Encrypt - to musi być przed innymi lokalizacjami
     location /.well-known/acme-challenge/ {
@@ -92,7 +147,8 @@ server {
 EOF
 
 echo -e "${YELLOW}Uruchamianie kontenerów Docker...${NC}"
-run_docker_compose down
+run_docker_compose down --remove-orphans
+sleep 2
 run_docker_compose up -d --force-recreate
 
 # Sprawdzanie czy uruchomienie się powiodło
@@ -205,7 +261,7 @@ if [ $? -eq 0 ]; then
                 cat > nginx/conf.d/default.conf << EOF
 server {
     listen 80;
-    server_name casiopea.piwo.org localhost 127.0.0.1 192.168.0.101;
+    server_name cassiopea.piwo.org localhost 127.0.0.1;
     
     # Punkt weryfikacji Let's Encrypt - to musi być przed innymi lokalizacjami
     location /.well-known/acme-challenge/ {
@@ -238,11 +294,11 @@ server {
 # Serwer HTTPS
 server {
     listen 443 ssl;
-    server_name casiopea.piwo.org;
+    server_name cassiopea.piwo.org;
     
     # Certyfikaty SSL/TLS
-    ssl_certificate /etc/letsencrypt/live/casiopea.piwo.org/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/casiopea.piwo.org/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/cassiopea.piwo.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/cassiopea.piwo.org/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
     
