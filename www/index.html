@@ -16,7 +16,7 @@
                 <div class="dot yellow"></div>
                 <div class="dot green"></div>
             </div>
-            <div class="title">casiopea.piwo.org</div>
+            <div class="title">casiopea.piwo.org :: terminal</div>
         </div>
         <div class="terminal-content">
             <div class="ascii-art">
@@ -27,10 +27,72 @@
 ██║     ██╔══██║╚════██║██║██║   ██║██╔═══╝ ██╔══╝  ██╔══██║
 ╚██████╗██║  ██║███████║██║╚██████╔╝██║     ███████╗██║  ██║
  ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝ ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═╝
+
+              * GWIAZDOZBIÓR KASJOPEA [W] *              
+              \           β           /               
+               \         / \         /                
+                \       /   \       /                 
+                 α-----γ     δ-----ε                     
+                [SCHEDAR] [NAVI]  [SEGIN]                                                 
+             WSPÓŁRZĘDNE: RA 01h 25.2m DEC +60° 10'                 
+                                           
 =============================================================
->> HOMELAB :: SYSTEM CASIOPEA <<
+>> LINUX TERMINAL :: SYSTEM CASIOPEA <<
 =============================================================
 </pre>
+            </div>
+            <div class="terminal-lines">
+                <div class="line">
+                    <span class="user">root@casiopea:</span><span class="path">~#</span> <span class="command" id="welcomeCommand"></span>
+                </div>
+                <div class="line output" id="welcomeOutput"></div>
+                
+                <div class="line">
+                    <span class="user">root@casiopea:</span><span class="path">~#</span> <span class="command" id="statusCommand"></span>
+                </div>
+                <div class="line output" id="statusOutput"></div>
+                
+                <div class="line">
+                    <span class="user">root@casiopea:</span><span class="path">~#</span> <span class="command" id="servicesCommand"></span>
+                </div>
+                <div class="line output" id="servicesOutput"></div>
+                
+                <div class="line">
+                    <span class="user">root@casiopea:</span><span class="path">~#</span> <span class="command" id="helpCommand"></span>
+                </div>
+                <div class="line output" id="helpOutput"></div>
+                
+                <div class="terminal-input">
+                    <span class="user">visitor@casiopea:</span><span class="path">~$</span> <span class="cursor-input"><input type="text" id="userInput" autofocus></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>DOSTĘP DO TERMINALA</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="login-form">
+                    <div class="input-group">
+                        <label for="username">Login:</label>
+                        <input type="text" id="username" placeholder="visitor">
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Hasło:</label>
+                        <input type="password" id="password" placeholder="********">
+                    </div>
+                    <div class="button-group">
+                        <button id="loginButton">ZALOGUJ</button>
+                        <button id="guestButton">GOŚĆ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script src="js/terminal.js"></script>
 </body>
