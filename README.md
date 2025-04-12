@@ -13,20 +13,34 @@ Projekt wykorzystuje Nginx, PHP 8.2 i Let's Encrypt do obsługi strony interneto
 
 ### Uruchomienie
 
-Uruchom skrypt inicjalizacyjny, aby skonfigurować certyfikaty SSL/TLS:
+Istnieje jeden uniwersalny skrypt, który przeprowadzi cały proces konfiguracji:
 
 ```bash
-# Upewnij się, że skrypt ma prawa do wykonania
-chmod +x init-letsencrypt.sh
+# Pobieranie repozytorium
+git clone https://github.com/elroyski/casiopea.piwo.org.git
+cd casiopea.piwo.org
 
-# Uruchom skrypt inicjalizacyjny
-./init-letsencrypt.sh
+# Upewnij się, że skrypt ma prawa do wykonania
+chmod +x start.sh
+
+# Uruchom skrypt
+./start.sh
 ```
+
+Skrypt `start.sh` wykonuje następujące czynności:
+1. Pobiera najnowszą wersję repozytorium (lub klonuje je, jeśli nie istnieje)
+2. Konfiguruje certyfikaty Let's Encrypt
+3. Uruchamia kontenery Docker
+
+### Opcje konfiguracji
+
+Skrypt można dostosować, edytując następujące parametry w jego kodzie:
+- `email` - adres email do powiadomień Let's Encrypt
+- `staging` - ustaw na 1 dla środowiska testowego Let's Encrypt
+- `setup_letsencrypt` - ustaw na 0, aby pominąć konfigurację Let's Encrypt
 
 ### Strona
 
 Po uruchomieniu strona będzie dostępna pod adresami:
 - HTTP: http://casiopea.piwo.org
-- HTTPS: https://casiopea.piwo.org
-
-W przypadku problemów z certyfikatami, możesz edytować plik `init-letsencrypt.sh` i zmienić parametr `staging=0` na `staging=1`, aby użyć środowiska testowego Let's Encrypt. 
+- HTTPS: https://casiopea.piwo.org (jeśli skonfigurowano Let's Encrypt) 
