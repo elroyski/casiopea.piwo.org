@@ -65,6 +65,23 @@ if [ $? -eq 0 ]; then
     echo -e "${GREEN}Strona jest dostępna pod adresem: http://localhost${NC}"
     echo -e "${GREEN}Strona jest dostępna pod adresem: http://$domain${NC}"
     
+    # Testy diagnostyczne
+    echo -e "${YELLOW}Wykonuję testy diagnostyczne...${NC}"
+    echo -e "Sprawdzanie lokalnego dostępu do serwera:"
+    curl -I http://localhost
+    
+    echo -e "\nSprawdzanie dostępu przez IP:"
+    ip_local=$(hostname -I | awk '{print $1}')
+    echo "Lokalne IP: $ip_local"
+    curl -I http://$ip_local
+    
+    # Sprawdzanie nazwy sieci kontenera
+    container_id=$(run_docker_compose ps -q nginx)
+    echo -e "\nID kontenera Nginx: $container_id"
+    
+    network_name=$(docker inspect -f '{{range $key, $value := .NetworkSettings.Networks}}{{$key}}{{end}}' $container_id)
+    echo -e "Nazwa sieci: $network_name"
+    
     # Konfiguracja Let's Encrypt
     if [ $setup_letsencrypt -eq 1 ]; then
         echo -e "${YELLOW}Czy chcesz skonfigurować HTTPS z Let's Encrypt? (t/n)${NC}"
@@ -76,27 +93,31 @@ if [ $? -eq 0 ]; then
             ip_serwera=$(curl -s ifconfig.me)
             echo -e "${YELLOW}IP tego serwera: $ip_serwera${NC}"
             
-            # Zapisanie testowego pliku do katalogu certbot
-            echo "testowy_plik" > certbot/www/.well-known/acme-challenge/test.txt
+            # Tworzenie testowego pliku
+            echo "testowy_plik_$(date +%s)" > certbot/www/.well-known/acme-challenge/test.txt
+            echo -e "${YELLOW}Utworzono plik testowy: $(cat certbot/www/.well-known/acme-challenge/test.txt)${NC}"
             
-            echo -e "${YELLOW}Testowy plik został utworzony. Teraz sprawdzę, czy jest dostępny z zewnątrz...${NC}"
-            echo -e "${YELLOW}Próbuję pobrać: http://$domain/.well-known/acme-challenge/test.txt${NC}"
+            # Sprawdzenie uprawnień
+            chmod -R 755 certbot/www
             
-            # Sprawdzenie dostępności testowego pliku
-            if curl -s "http://$domain/.well-known/acme-challenge/test.txt" | grep -q "testowy_plik"; then
-                echo -e "${GREEN}Domena jest poprawnie skonfigurowana i dostępna z internetu!${NC}"
-            else
-                echo -e "${RED}Nie można pobrać testowego pliku. Sprawdź, czy:${NC}"
-                echo -e "${RED}1. Domena $domain wskazuje na IP: $ip_serwera${NC}"
-                echo -e "${RED}2. Port 80 jest otwarty i przekierowany do serwera${NC}"
-                echo -e "${RED}3. Firewall nie blokuje połączeń HTTP${NC}"
-                
-                echo -e "${YELLOW}Czy mimo to chcesz spróbować pobrać certyfikat? (t/n)${NC}"
-                read -r kontynuuj
-                if [[ ! "$kontynuuj" =~ ^[tT]$ ]]; then
-                    echo -e "${YELLOW}Pominięto konfigurację HTTPS.${NC}"
-                    exit 0
-                fi
+            echo -e "${YELLOW}Testowy plik został utworzony. Teraz sprawdzę, czy jest dostępny lokalnie...${NC}"
+            echo -e "Lokalny dostęp: http://localhost/.well-known/acme-challenge/test.txt"
+            curl -v http://localhost/.well-known/acme-challenge/test.txt
+            
+            echo -e "\n${YELLOW}Sprawdzam dostęp z zewnątrz: http://$domain/.well-known/acme-challenge/test.txt${NC}"
+            curl -v --connect-timeout 10 http://$domain/.well-known/acme-challenge/test.txt
+            
+            echo -e "\n${YELLOW}Sprawdzanie DNS domeny...${NC}"
+            host $domain
+            
+            echo -e "\n${YELLOW}Sprawdzenie połączenia do portu 80...${NC}"
+            nc -z -v -w5 $domain 80
+            
+            echo -e "\n${YELLOW}Czy mimo tych testów chcesz spróbować pobrać certyfikat? (t/n)${NC}"
+            read -r kontynuuj
+            if [[ ! "$kontynuuj" =~ ^[tT]$ ]]; then
+                echo -e "${YELLOW}Pominięto konfigurację HTTPS.${NC}"
+                exit 0
             fi
             
             echo -e "${YELLOW}Konfiguracja Let's Encrypt...${NC}"
@@ -106,12 +127,6 @@ if [ $? -eq 0 ]; then
                 staging_arg="--staging"
             else
                 staging_arg=""
-            fi
-            
-            # Ustalenie sieci dla certbota
-            network_name=$(run_docker_compose ps -q nginx | xargs docker inspect -f '{{range $i, $n := .NetworkSettings.Networks}}{{if eq $i 0}}{{println $i}}{{end}}{{end}}')
-            if [ -z "$network_name" ]; then
-                network_name="casiopeapiwoorg_casiopea-network"
             fi
             
             echo -e "${YELLOW}Używam sieci: $network_name${NC}"
@@ -140,6 +155,12 @@ if [ $? -eq 0 ]; then
                 echo -e "${RED}Upewnij się, że domena $domain wskazuje na ten serwer i port 80 jest dostępny z internetu.${NC}"
                 echo -e "${YELLOW}Możesz ręcznie sprawdzić status weryfikacji:${NC}"
                 echo -e "${YELLOW}curl -I http://$domain/.well-known/acme-challenge/test.txt${NC}"
+                
+                echo -e "\n${RED}Podsumowanie problemu:${NC}"
+                echo -e "1. Domena $domain powinna wskazywać na IP: $ip_serwera"
+                echo -e "2. Port 80 musi być otwarty i przekierowany do tego serwera"
+                echo -e "3. Firewall nie może blokować połączeń HTTP"
+                echo -e "4. Router/firewall musi przekierowywać port 80 na lokalny adres IP: $ip_local"
             fi
         else
             echo -e "${YELLOW}Pominięto konfigurację HTTPS.${NC}"
