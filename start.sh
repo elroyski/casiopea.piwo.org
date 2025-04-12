@@ -126,7 +126,8 @@ services:
       - ./unifi/config:/config
       - ./unifi/data:/data
       - ./unifi/logs:/logs
-      - ./unifi/run:/run
+      - ./unifi/run:/run/unifi
+      - ./unifi/run:/var/run/unifi
     ports:
       - ${server_ip}:3478:3478/udp
       - ${server_ip}:10001:10001/udp
