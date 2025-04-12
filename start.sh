@@ -81,8 +81,6 @@ mkdir -p unifi/init
 if [ ! -f "docker-compose.yml" ]; then
     echo -e "${YELLOW}Plik docker-compose.yml nie istnieje. Tworzę domyślny plik...${NC}"
     cat > docker-compose.yml << EOF
-version: '3'
-
 services:
   nginx:
     image: nginx:alpine
@@ -117,9 +115,9 @@ services:
     networks:
       - cassiopeia-network
 
-  unifi-controller:
+  unifi:
     image: linuxserver/unifi-controller:latest
-    container_name: unifi-controller
+    container_name: cassiopea-unifi-controller
     environment:
       - PUID=1000
       - PGID=1000
@@ -239,7 +237,7 @@ if [ $? -eq 0 ]; then
 
     # Sprawdź logi UniFi
     echo -e "\n${YELLOW}Sprawdzanie logów Unifi Controller:${NC}"
-    unifi_id=$(run_docker_compose ps -q unifi-controller)
+    unifi_id=$(run_docker_compose ps -q unifi)
     if [ -n "$unifi_id" ]; then
         docker logs --tail 20 $unifi_id
     else
