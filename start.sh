@@ -7,10 +7,10 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Dane do konfiguracji Let's Encrypt
-domain="cassiopea.piwo.org"
-docker_project_name="cassiopeapiwoorg"  # Dodajemy zmienną dla nazwy projektu Docker
+domain="cassiopeia.piwo.org"
+docker_project_name="cassiopeiapiworg"  # Dodajemy zmienną dla nazwy projektu Docker
 rsa_key_size=4096
-email="admin@cassiopea.piwo.org"  # Zmień na swój adres e-mail
+email="admin@cassiopeia.piwo.org"  # Zmień na swój adres e-mail
 staging=0 # Ustaw na 1, aby testować konfigurację (nie generuje prawdziwych certyfikatów)
 setup_letsencrypt=1 # Ustaw na 0, aby pominąć konfigurację Let's Encrypt
 
@@ -22,7 +22,7 @@ if [ -d ".git" ]; then
     git pull origin master
 else
     # Jeśli repozytorium nie istnieje, wykonaj git clone
-    git clone https://github.com/elroyski/cassiopea.piwo.org.git .
+    git clone https://github.com/elroyski/cassiopeia.piwo.org.git .
 fi
 
 # Sprawdzanie czy Docker jest zainstalowany
@@ -86,7 +86,7 @@ services:
       - php
     restart: always
     networks:
-      - cassiopea-network
+      - cassiopeia-network
 
   php:
     image: php:8.2-fpm-alpine
@@ -94,7 +94,7 @@ services:
       - ./www:/usr/share/nginx/html
     restart: always
     networks:
-      - cassiopea-network
+      - cassiopeia-network
 
   certbot:
     image: certbot/certbot
@@ -103,10 +103,10 @@ services:
       - ./certbot/www:/var/www/certbot
     command: /bin/sh -c "trap exit TERM; while :; do certbot renew; sleep 12h & wait \$\${!}; done;"
     networks:
-      - cassiopea-network
+      - cassiopeia-network
 
 networks:
-  cassiopea-network:
+  cassiopeia-network:
     driver: bridge
 EOF
 fi
@@ -115,7 +115,7 @@ fi
 cat > nginx/conf.d/default.conf << EOF
 server {
     listen 80;
-    server_name cassiopea.piwo.org localhost 127.0.0.1;
+    server_name cassiopeia.piwo.org localhost 127.0.0.1;
     
     # Punkt weryfikacji Let's Encrypt - to musi być przed innymi lokalizacjami
     location /.well-known/acme-challenge/ {
@@ -261,7 +261,7 @@ if [ $? -eq 0 ]; then
                 cat > nginx/conf.d/default.conf << EOF
 server {
     listen 80;
-    server_name cassiopea.piwo.org localhost 127.0.0.1;
+    server_name cassiopeia.piwo.org localhost 127.0.0.1;
     
     # Punkt weryfikacji Let's Encrypt - to musi być przed innymi lokalizacjami
     location /.well-known/acme-challenge/ {
@@ -294,11 +294,11 @@ server {
 # Serwer HTTPS
 server {
     listen 443 ssl;
-    server_name cassiopea.piwo.org;
+    server_name cassiopeia.piwo.org;
     
     # Certyfikaty SSL/TLS
-    ssl_certificate /etc/letsencrypt/live/cassiopea.piwo.org/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/cassiopea.piwo.org/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/cassiopeia.piwo.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/cassiopeia.piwo.org/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
     
