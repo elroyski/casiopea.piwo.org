@@ -6,7 +6,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Dane do konfiguracji Let's Encrypt
-domains=(casiopea.piwo.org)
+domain="casiopea.piwo.org"
 rsa_key_size=4096
 email="admin@casiopea.piwo.org"  # Zmień na swój adres e-mail
 staging=0 # Ustaw na 1, aby testować konfigurację (nie generuje prawdziwych certyfikatów)
@@ -45,9 +45,9 @@ fi
 # Funkcja do uruchamiania docker-compose
 run_docker_compose() {
     if [ $has_docker_compose_v1 -eq 1 ]; then
-        docker-compose $@
+        docker-compose "$@"
     else
-        docker compose $@
+        docker compose "$@"
     fi
 }
 
@@ -56,17 +56,18 @@ if [ $setup_letsencrypt -eq 1 ]; then
     echo -e "${YELLOW}Konfiguracja Let's Encrypt...${NC}"
     
     # Tworzenie katalogów dla certbot
-    mkdir -p certbot/conf/live/$domains
+    mkdir -p certbot/conf/live/$domain
     mkdir -p certbot/www
     
     echo -e "${YELLOW}Tworzenie tymczasowego certyfikatu...${NC}"
-    path="/etc/letsencrypt/live/$domains"
+    
     # Tworzymy tymczasowy certyfikat, żeby nginx mógł wystartować
-    run_docker_compose run --rm --entrypoint "\
-      openssl req -x509 -nodes -newkey rsa:$rsa_key_size -days 1\
-        -keyout '$path/privkey.pem' \
-        -out '$path/fullchain.pem' \
-        -subj '/CN=localhost'" certbot
+    docker run --rm -v "$(pwd)/certbot/conf:/etc/letsencrypt" -v "$(pwd)/certbot/www:/var/www/certbot" \
+        certbot/certbot \
+        openssl req -x509 -nodes -newkey rsa:$rsa_key_size -days 1 \
+        -keyout /etc/letsencrypt/live/$domain/privkey.pem \
+        -out /etc/letsencrypt/live/$domain/fullchain.pem \
+        -subj '/CN=localhost'
     
     echo -e "${YELLOW}Pobieranie rekomendowanych parametrów TLS...${NC}"
     curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > certbot/conf/options-ssl-nginx.conf
@@ -76,34 +77,33 @@ if [ $setup_letsencrypt -eq 1 ]; then
     run_docker_compose up -d
     
     echo -e "${YELLOW}Usuwanie tymczasowego certyfikatu...${NC}"
-    run_docker_compose run --rm --entrypoint "\
-      rm -Rf /etc/letsencrypt/live/$domains" certbot
+    rm -rf "$(pwd)/certbot/conf/live/$domain"
     
     echo -e "${YELLOW}Wnioskowanie o nowy certyfikat...${NC}"
-    domain_args=""
-    for domain in "${domains[@]}"; do
-      domain_args="$domain_args -d $domain"
-    done
     
     # Wybór trybu: staging/produkcja
-    case "$staging" in
-      0) staging_arg="--force-renewal" ;;
-      1) staging_arg="--staging --force-renewal" ;;
-    esac
+    if [ "$staging" -eq 1 ]; then
+        staging_arg="--staging"
+    else
+        staging_arg=""
+    fi
     
-    run_docker_compose run --rm --entrypoint "\
-      certbot certonly --webroot -w /var/www/certbot \
+    # Uruchamianie certbot do pobrania certyfikatu
+    docker run --rm \
+        -v "$(pwd)/certbot/conf:/etc/letsencrypt" \
+        -v "$(pwd)/certbot/www:/var/www/certbot" \
+        --network $(run_docker_compose ps -q nginx | xargs docker inspect -f '{{range .NetworkSettings.Networks}}{{.NetworkID}}{{end}}') \
+        certbot/certbot \
+        certonly --webroot -w /var/www/certbot \
         $staging_arg \
-        $domain_args \
+        -d $domain \
         --email $email \
         --rsa-key-size $rsa_key_size \
         --agree-tos \
-        --no-eff-email" certbot
+        --no-eff-email
     
     echo -e "${YELLOW}Restart kontenerów...${NC}"
     run_docker_compose down
-else
-    echo -e "${YELLOW}Pomijanie konfiguracji Let's Encrypt...${NC}"
 fi
 
 echo -e "${YELLOW}Uruchamianie kontenerów Docker...${NC}"
@@ -115,9 +115,9 @@ if [ $? -eq 0 ]; then
     echo -e "${GREEN}Strona jest dostępna pod adresem: http://localhost${NC}"
     
     if [ $setup_letsencrypt -eq 1 ]; then
-        echo -e "${GREEN}Strona jest również dostępna pod adresem: https://casiopea.piwo.org${NC}"
+        echo -e "${GREEN}Strona jest również dostępna pod adresem: https://$domain${NC}"
     else
-        echo -e "${GREEN}Docelowo strona będzie dostępna pod adresem: http://casiopea.piwo.org${NC}"
+        echo -e "${GREEN}Docelowo strona będzie dostępna pod adresem: http://$domain${NC}"
     fi
 else
     echo -e "${YELLOW}Wystąpił błąd podczas uruchamiania kontenerów.${NC}"
