@@ -38,27 +38,7 @@ body {
     box-shadow: 0 0 30px rgba(0, 255, 0, 0.2);
     overflow: hidden;
     background-color: var(--terminal-bg);
-    animation: bootup 2s ease-out;
     border: 1px solid #333;
-}
-
-@keyframes bootup {
-    0% {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    20% {
-        opacity: 1;
-    }
-    30% {
-        opacity: 0.7;
-    }
-    40% {
-        opacity: 1;
-    }
-    100% {
-        transform: scale(1);
-    }
 }
 
 .terminal-header {
