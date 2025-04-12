@@ -1,7 +1,7 @@
 :root {
     --background: #0f0f0f;
-    --terminal-bg: #121212;
-    --terminal-header: #1f1f1f;
+    --terminal-bg: #1c1c1c;
+    --terminal-header: #2a2a2a;
     --text-color: #00ff00;
     --text-dim: rgba(0, 255, 0, 0.7);
     --text-highlight: #00ffcc;
@@ -33,13 +33,13 @@ body {
 }
 
 .terminal {
-    width: 900px;
-    max-width: 95%;
+    width: 100%;
+    max-width: 1200px;
     box-shadow: 0 0 30px rgba(0, 255, 0, 0.2);
-    border-radius: 6px;
     overflow: hidden;
     background-color: var(--terminal-bg);
     animation: bootup 2s ease-out;
+    border: 1px solid #333;
 }
 
 @keyframes bootup {
@@ -56,15 +56,6 @@ body {
     40% {
         opacity: 1;
     }
-    80% {
-        transform: scale(1);
-    }
-    85% {
-        transform: scale(1.02);
-    }
-    90% {
-        transform: scale(0.99);
-    }
     100% {
         transform: scale(1);
     }
@@ -72,10 +63,10 @@ body {
 
 .terminal-header {
     background-color: var(--terminal-header);
-    padding: 10px 15px;
+    padding: 8px 15px;
     display: flex;
     align-items: center;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #444;
 }
 
 .dots {
@@ -86,20 +77,20 @@ body {
 .dot {
     width: 12px;
     height: 12px;
-    border-radius: 50%;
+    border-radius: 3px;
     margin-right: 8px;
 }
 
 .red {
-    background-color: #ff5f57;
+    background-color: #e05e5e;
 }
 
 .yellow {
-    background-color: #febc2e;
+    background-color: #e0c05e;
 }
 
 .green {
-    background-color: #28c841;
+    background-color: #5ee076;
 }
 
 .title {
@@ -110,9 +101,7 @@ body {
 
 .terminal-content {
     padding: 20px;
-    min-height: 500px;
-    max-height: 80vh;
-    overflow-y: auto;
+    min-height: 600px;
     position: relative;
 }
 
@@ -262,7 +251,7 @@ body {
 .modal-content {
     background-color: var(--terminal-bg);
     border: 1px solid var(--text-color);
-    border-radius: 5px;
+    border-radius: 3px;
     box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
     width: 400px;
     max-width: 90%;
