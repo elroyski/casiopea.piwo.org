@@ -7,4 +7,8 @@ services:
       - "80:80"
     volumes:
       - ./www:/usr/share/nginx/html
-    restart: unless-stopped 
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    restart: unless-stopped
+    environment:
+      - VIRTUAL_HOST=casiopea.piwo.org
+      - LETSENCRYPT_HOST=casiopea.piwo.org 

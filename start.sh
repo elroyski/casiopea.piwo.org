@@ -37,6 +37,7 @@ fi
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}Kontenery zostały uruchomione pomyślnie!${NC}"
     echo -e "${GREEN}Strona jest dostępna pod adresem: http://localhost${NC}"
+    echo -e "${GREEN}Docelowo strona będzie dostępna pod adresem: http://casiopea.piwo.org${NC}"
 else
     echo -e "${YELLOW}Wystąpił błąd podczas uruchamiania kontenerów.${NC}"
     exit 1
