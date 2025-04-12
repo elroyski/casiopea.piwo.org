@@ -11,6 +11,7 @@ rsa_key_size=4096
 email="admin@casiopea.piwo.org"  # Zmień na swój adres e-mail
 staging=0 # Ustaw na 1, aby testować konfigurację (nie generuje prawdziwych certyfikatów)
 setup_letsencrypt=1 # Ustaw na 0, aby pominąć konfigurację Let's Encrypt
+test_cert=1 # Ustaw na 1, aby pominąć weryfikację online (generuje samopodpisany certyfikat)
 
 echo -e "${YELLOW}Pobieranie najnowszej wersji z repozytorium...${NC}"
 
@@ -53,57 +54,91 @@ run_docker_compose() {
 
 # Konfiguracja Let's Encrypt
 if [ $setup_letsencrypt -eq 1 ]; then
-    echo -e "${YELLOW}Konfiguracja Let's Encrypt...${NC}"
+    echo -e "${YELLOW}Konfiguracja SSL/TLS...${NC}"
     
     # Tworzenie katalogów dla certbot
-    mkdir -p certbot/conf/live/$domain
-    mkdir -p certbot/www
+    mkdir -p certbot/conf
+    mkdir -p certbot/www/.well-known/acme-challenge
     
-    echo -e "${YELLOW}Tworzenie tymczasowego certyfikatu...${NC}"
-    
-    # Tworzymy tymczasowy certyfikat, żeby nginx mógł wystartować
-    docker run --rm -v "$(pwd)/certbot/conf:/etc/letsencrypt" -v "$(pwd)/certbot/www:/var/www/certbot" \
-        certbot/certbot \
-        openssl req -x509 -nodes -newkey rsa:$rsa_key_size -days 1 \
-        -keyout /etc/letsencrypt/live/$domain/privkey.pem \
-        -out /etc/letsencrypt/live/$domain/fullchain.pem \
-        -subj '/CN=localhost'
-    
-    echo -e "${YELLOW}Pobieranie rekomendowanych parametrów TLS...${NC}"
-    curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > certbot/conf/options-ssl-nginx.conf
-    curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > certbot/conf/ssl-dhparams.pem
-    
-    echo -e "${YELLOW}Uruchamianie kontenerów...${NC}"
-    run_docker_compose up -d
-    
-    echo -e "${YELLOW}Usuwanie tymczasowego certyfikatu...${NC}"
-    rm -rf "$(pwd)/certbot/conf/live/$domain"
-    
-    echo -e "${YELLOW}Wnioskowanie o nowy certyfikat...${NC}"
-    
-    # Wybór trybu: staging/produkcja
-    if [ "$staging" -eq 1 ]; then
-        staging_arg="--staging"
+    if [ $test_cert -eq 1 ]; then
+        echo -e "${YELLOW}Tworzenie samopodpisanego certyfikatu (bez weryfikacji online)...${NC}"
+        
+        # Tworzymy katalog dla certyfikatu
+        mkdir -p certbot/conf/live/$domain
+        
+        # Tworzymy samopodpisany certyfikat przy użyciu openssl
+        openssl req -x509 -nodes -newkey rsa:$rsa_key_size -days 365 \
+            -keyout certbot/conf/live/$domain/privkey.pem \
+            -out certbot/conf/live/$domain/fullchain.pem \
+            -subj "/CN=$domain" \
+            -addext "subjectAltName = DNS:$domain"
+            
+        # Tworzymy potrzebne pliki dla Nginx
+        echo "" > certbot/conf/options-ssl-nginx.conf
+        openssl dhparam -out certbot/conf/ssl-dhparams.pem 2048
     else
-        staging_arg=""
+        echo -e "${YELLOW}Tworzenie tymczasowego certyfikatu...${NC}"
+        
+        # Tworzymy katalog dla certyfikatu
+        mkdir -p certbot/conf/live/$domain
+        
+        # Tworzymy tymczasowy certyfikat przy użyciu openssl
+        openssl req -x509 -nodes -newkey rsa:$rsa_key_size -days 1 \
+            -keyout certbot/conf/live/$domain/privkey.pem \
+            -out certbot/conf/live/$domain/fullchain.pem \
+            -subj "/CN=localhost"
+        
+        echo -e "${YELLOW}Pobieranie rekomendowanych parametrów TLS...${NC}"
+        curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > certbot/conf/options-ssl-nginx.conf
+        curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > certbot/conf/ssl-dhparams.pem
+        
+        echo -e "${YELLOW}Uruchamianie kontenerów...${NC}"
+        run_docker_compose up -d
+        
+        echo -e "${YELLOW}Oczekiwanie na uruchomienie Nginx...${NC}"
+        sleep 5
+        
+        echo -e "${YELLOW}Wnioskowanie o nowy certyfikat...${NC}"
+        
+        # Wybór trybu: staging/produkcja
+        if [ "$staging" -eq 1 ]; then
+            staging_arg="--staging"
+        else
+            staging_arg=""
+        fi
+        
+        # Uruchamianie certbot do pobrania certyfikatu
+        docker run --rm \
+            -v "$(pwd)/certbot/conf:/etc/letsencrypt" \
+            -v "$(pwd)/certbot/www:/var/www/certbot" \
+            certbot/certbot \
+            certonly --webroot -w /var/www/certbot \
+            $staging_arg \
+            -d $domain \
+            --email $email \
+            --rsa-key-size $rsa_key_size \
+            --agree-tos \
+            --no-eff-email \
+            --force-renewal
+        
+        if [ $? -ne 0 ]; then
+            echo -e "${YELLOW}Nie udało się pobrać certyfikatu Let's Encrypt. Tworzenie samopodpisanego certyfikatu...${NC}"
+            
+            # Usuwamy tymczasowy certyfikat
+            rm -rf certbot/conf/live/$domain
+            mkdir -p certbot/conf/live/$domain
+            
+            # Tworzymy samopodpisany certyfikat
+            openssl req -x509 -nodes -newkey rsa:$rsa_key_size -days 365 \
+                -keyout certbot/conf/live/$domain/privkey.pem \
+                -out certbot/conf/live/$domain/fullchain.pem \
+                -subj "/CN=$domain" \
+                -addext "subjectAltName = DNS:$domain"
+        fi
+        
+        echo -e "${YELLOW}Restart kontenerów...${NC}"
+        run_docker_compose down
     fi
-    
-    # Uruchamianie certbot do pobrania certyfikatu
-    docker run --rm \
-        -v "$(pwd)/certbot/conf:/etc/letsencrypt" \
-        -v "$(pwd)/certbot/www:/var/www/certbot" \
-        --network $(run_docker_compose ps -q nginx | xargs docker inspect -f '{{range .NetworkSettings.Networks}}{{.NetworkID}}{{end}}') \
-        certbot/certbot \
-        certonly --webroot -w /var/www/certbot \
-        $staging_arg \
-        -d $domain \
-        --email $email \
-        --rsa-key-size $rsa_key_size \
-        --agree-tos \
-        --no-eff-email
-    
-    echo -e "${YELLOW}Restart kontenerów...${NC}"
-    run_docker_compose down
 fi
 
 echo -e "${YELLOW}Uruchamianie kontenerów Docker...${NC}"
@@ -116,6 +151,7 @@ if [ $? -eq 0 ]; then
     
     if [ $setup_letsencrypt -eq 1 ]; then
         echo -e "${GREEN}Strona jest również dostępna pod adresem: https://$domain${NC}"
+        echo -e "${YELLOW}UWAGA: Jeśli używasz samopodpisanego certyfikatu, przeglądarka może wyświetlić ostrzeżenie o niezaufanym połączeniu.${NC}"
     else
         echo -e "${GREEN}Docelowo strona będzie dostępna pod adresem: http://$domain${NC}"
     fi
