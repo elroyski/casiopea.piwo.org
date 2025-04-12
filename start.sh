@@ -73,6 +73,9 @@ mkdir -p unifi/config
 mkdir -p unifi/data
 mkdir -p unifi/logs
 mkdir -p unifi/run
+mkdir -p unifi/lib
+mkdir -p unifi/cert
+mkdir -p unifi/init
 
 # Upewniamy się, że skrypt znajdzie lub utworzy plik docker-compose.yml
 if [ ! -f "docker-compose.yml" ]; then
@@ -128,9 +131,13 @@ services:
       - ./unifi/logs:/logs
       - ./unifi/run:/run/unifi
       - ./unifi/run:/var/run/unifi
+      - ./unifi/lib:/var/lib/unifi
+      - ./unifi/cert:/usr/lib/unifi/cert
+      - ./unifi/init:/etc/cont-init.d
     ports:
       - ${server_ip}:3478:3478/udp
       - ${server_ip}:10001:10001/udp
+      - ${server_ip}:10001:10001/tcp
       - ${server_ip}:8080:8080
       - ${server_ip}:8443:8443
       - ${server_ip}:1900:1900/udp #optional
