@@ -1,16 +1,17 @@
 :root {
-    --background: #0f0f0f;
+    --bg-color: #121212;
     --terminal-bg: #1c1c1c;
     --terminal-header: #2a2a2a;
-    --text-color: #00ff00;
+    --terminal-text: #f0f0f0;
+    --terminal-prompt: #50fa7b;
+    --terminal-success: #50fa7b;
+    --terminal-error: #ff5555;
+    --terminal-warning: #f1fa8c;
     --text-dim: rgba(0, 255, 0, 0.7);
     --text-highlight: #00ffcc;
     --path-color: #7cd2ff;
     --user-color: #00ff7f;
     --command-color: #ffffff;
-    --error-color: #ff3333;
-    --warning-color: #ffcc00;
-    --success-color: #33ff33;
     --link-color: #3399ff;
 }
 
@@ -21,68 +22,49 @@
 }
 
 body {
-    font-family: 'Hack', monospace;
-    background-color: var(--background);
-    color: var(--text-color);
+    background-color: var(--bg-color);
+    font-family: 'Fira Code', monospace;
+    color: var(--terminal-text);
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
-    line-height: 1.6;
+    align-items: flex-start;
 }
 
 .terminal {
     width: 100%;
     max-width: 1200px;
-    box-shadow: 0 0 30px rgba(0, 255, 0, 0.2);
-    overflow: hidden;
     background-color: var(--terminal-bg);
     border: 1px solid #333;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
 }
 
 .terminal-header {
     background-color: var(--terminal-header);
-    padding: 8px 15px;
+    padding: 10px 15px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid #333;
 }
 
-.dots {
-    display: flex;
-    margin-right: 15px;
-}
-
-.dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 3px;
-    margin-right: 8px;
-}
-
-.red {
-    background-color: #e05e5e;
-}
-
-.yellow {
-    background-color: #e0c05e;
-}
-
-.green {
-    background-color: #5ee076;
-}
-
-.title {
-    color: var(--text-dim);
-    font-size: 14px;
-    font-weight: 600;
+.terminal-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #ccc;
 }
 
 .terminal-content {
     padding: 20px;
     min-height: 600px;
-    position: relative;
+    font-size: 14px;
+    overflow-wrap: break-word;
+    line-height: 1.6;
 }
 
 .terminal-content::-webkit-scrollbar {
@@ -98,288 +80,144 @@ body {
     background-color: var(--terminal-bg);
 }
 
-.ascii-art {
-    color: var(--text-highlight);
-    margin-bottom: 20px;
-    font-size: 12px;
-    white-space: pre;
+/* Responzywny ASCII art */
+.terminal-content pre {
     text-align: center;
+    font-size: 10px;
+    white-space: pre;
+    overflow-x: auto;
+    margin: 0 auto;
 }
 
-.line {
-    margin-bottom: 10px;
+/* Różne rozdzielczości ekranów dla ASCII art */
+@media (min-width: 576px) {
+    .terminal-content pre {
+        font-size: 12px;
+    }
+}
+
+@media (min-width: 768px) {
+    .terminal-content pre {
+        font-size: 14px;
+    }
+}
+
+@media (min-width: 992px) {
+    .terminal-content pre {
+        font-size: 16px;
+    }
+}
+
+.input-line {
     display: flex;
-    flex-wrap: wrap;
+    margin: 10px 0;
 }
 
 .user {
-    color: var(--user-color);
-    font-weight: bold;
+    color: var(--terminal-prompt);
     margin-right: 5px;
 }
 
-.path {
-    color: var(--path-color);
-    margin-right: 10px;
+#terminal-input {
+    background: transparent;
+    border: none;
+    color: var(--terminal-text);
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    flex-grow: 1;
+    outline: none;
+}
+
+#output {
+    margin-top: 20px;
+    white-space: pre-wrap;
 }
 
 .command {
-    color: var(--command-color);
+    margin-bottom: 10px;
 }
 
-.output {
-    color: var(--text-dim);
-    padding-left: 15px;
-    max-width: 100%;
-    word-wrap: break-word;
+.result {
     margin-bottom: 20px;
-}
-
-.terminal-input {
-    display: flex;
-    margin-top: 20px;
-    align-items: center;
-}
-
-#userInput {
-    background-color: transparent;
-    border: none;
-    color: var(--command-color);
-    font-family: 'Hack', monospace;
-    font-size: 16px;
-    outline: none;
-    width: calc(100% - 220px);
-    padding: 0;
-    margin: 0;
-}
-
-.cursor-input {
-    position: relative;
-    display: inline-block;
-}
-
-.cursor-input::after {
-    content: '';
-    display: inline-block;
-    position: absolute;
-    right: -10px;
-    top: 2px;
-    width: 8px;
-    height: 16px;
-    background-color: var(--text-color);
-    animation: blink 1s step-end infinite;
-}
-
-@keyframes blink {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0;
-    }
-}
-
-/* Links within terminal */
-.output a {
-    color: var(--link-color);
-    text-decoration: none;
-    position: relative;
-}
-
-.output a:hover {
-    text-decoration: underline;
-    color: #3399ff;
-}
-
-.output a::before {
-    content: '[';
-    color: var(--text-dim);
-}
-
-.output a::after {
-    content: ']';
-    color: var(--text-dim);
-}
-
-/* Status Colors */
-.success {
-    color: var(--success-color);
-}
-
-.warning {
-    color: var(--warning-color);
+    color: #ccc;
 }
 
 .error {
-    color: var(--error-color);
+    color: var(--terminal-error);
 }
 
-/* Modal Login */
+.success {
+    color: var(--terminal-success);
+}
+
+.warning {
+    color: var(--terminal-warning);
+}
+
 .modal {
     display: none;
     position: fixed;
-    top: 0;
+    z-index: 1;
     left: 0;
+    top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.85);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 .modal-content {
     background-color: var(--terminal-bg);
-    border: 1px solid var(--text-color);
-    border-radius: 3px;
-    box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
-    width: 400px;
-    max-width: 90%;
-    position: relative;
-    animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #444;
+    width: 80%;
+    max-width: 500px;
 }
 
 .modal-header {
-    background-color: var(--terminal-header);
-    padding: 15px;
-    border-bottom: 1px solid var(--text-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
 }
 
 .modal-header h2 {
-    color: var(--text-color);
-    font-size: 18px;
     margin: 0;
-    text-align: center;
+    color: var(--terminal-text);
 }
 
-.close {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    font-size: 20px;
+.close-modal {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+    color: var(--terminal-text);
+    text-decoration: none;
     cursor: pointer;
-    color: var(--text-dim);
-}
-
-.close:hover {
-    color: var(--text-color);
 }
 
 .modal-body {
-    padding: 20px;
+    padding: 20px 0;
 }
 
-.login-form {
-    display: flex;
-    flex-direction: column;
-}
-
-.input-group {
-    margin-bottom: 20px;
-}
-
-.input-group label {
-    display: block;
-    color: var(--text-color);
-    margin-bottom: 5px;
-}
-
-.input-group input {
-    width: 100%;
-    padding: 10px;
-    background-color: #222;
-    border: 1px solid var(--text-dim);
-    color: var(--text-color);
-    border-radius: 3px;
-    font-family: 'Hack', monospace;
-}
-
-.input-group input:focus {
-    outline: none;
-    border-color: var(--text-highlight);
-    box-shadow: 0 0 5px rgba(0, 255, 204, 0.5);
-}
-
-.button-group {
-    display: flex;
-    justify-content: space-between;
-}
-
-.button-group button {
-    padding: 10px 20px;
+button {
     background-color: #333;
-    border: 1px solid var(--text-color);
-    color: var(--text-color);
-    border-radius: 3px;
+    color: var(--terminal-text);
+    border: 1px solid #444;
+    padding: 8px 16px;
+    margin-right: 10px;
     cursor: pointer;
-    transition: all 0.3s;
-    font-family: 'Hack', monospace;
+    font-family: 'Fira Code', monospace;
 }
 
-.button-group button:hover {
-    background-color: var(--text-color);
-    color: #111;
-}
-
-/* Table styling for service listings */
-.service-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 10px 0;
-    color: var(--text-dim);
-}
-
-.service-table th {
-    text-align: left;
-    border-bottom: 1px solid var(--text-dim);
-    padding: 8px;
-    color: var(--text-highlight);
-}
-
-.service-table td {
-    padding: 6px 8px;
-}
-
-.service-table tr:nth-child(even) {
-    background-color: rgba(0, 255, 0, 0.05);
-}
-
-/* Matrix rain effect in background */
-.matrix-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    opacity: 0.05;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-    .terminal {
-        width: 100%;
-        max-width: 100%;
-    }
-    
-    #userInput {
-        width: calc(100% - 180px);
-    }
-    
-    .ascii-art {
-        font-size: 8px;
-    }
+button:hover {
+    background-color: #444;
 }
 
 /* Dodaję nowy styl dla banera-kontenera, aby był centralnie wyrównany */
