@@ -77,10 +77,6 @@ mkdir -p unifi/lib
 mkdir -p unifi/cert
 mkdir -p unifi/init
 
-# Tworzenie katalogów dla Pi-hole
-mkdir -p pihole/etc
-mkdir -p pihole/dnsmasq
-
 # Upewniamy się, że skrypt znajdzie lub utworzy plik docker-compose.yml
 if [ ! -f "docker-compose.yml" ]; then
     echo -e "${YELLOW}Plik docker-compose.yml nie istnieje. Tworzę domyślny plik...${NC}"
@@ -151,28 +147,6 @@ services:
     networks:
       - cassiopeia-network
 
-  pihole:
-    container_name: cassiopea-pihole
-    image: pihole/pihole:latest
-    ports:
-      - "5353:53/tcp"
-      - "5353:53/udp"
-      - "8888:80/tcp"
-    environment:
-      TZ: 'Europe/Warsaw'
-      WEBPASSWORD: 'casiopea'
-      SERVERIP: '192.168.0.101'
-      DNS1: '8.8.8.8'
-      DNS2: '1.1.1.1'
-    volumes:
-      - './pihole/etc:/etc/pihole'
-      - './pihole/dnsmasq:/etc/dnsmasq.d'
-    cap_add:
-      - NET_ADMIN
-    restart: unless-stopped
-    networks:
-      - cassiopeia-network
-
 networks:
   cassiopeia-network:
     driver: bridge
@@ -230,7 +204,6 @@ if [ $? -eq 0 ]; then
     echo -e "${GREEN}Strona powinna być dostępna pod adresem: http://localhost${NC}"
     echo -e "${GREEN}Strona powinna być dostępna pod adresem: http://$domain${NC}"
     echo -e "${GREEN}Unifi Controller dostępny pod: https://$server_ip:8443 (bezpośredni dostęp)${NC}"
-    echo -e "${GREEN}Pi-hole dostępny pod: http://$server_ip:8888/admin (hasło: casiopea) - DNS na porcie 5353${NC}"
 
     # Sprawdzenie dostępu do UniFi
     echo -e "${YELLOW}Sprawdzanie statusu Unifi Controller (może wymagać czasu na uruchomienie)...${NC}"
