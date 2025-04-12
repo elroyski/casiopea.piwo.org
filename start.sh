@@ -56,31 +56,50 @@ run_docker_compose() {
 mkdir -p certbot/www/.well-known/acme-challenge
 mkdir -p certbot/conf
 
+# Tworzenie pustego pliku options-ssl-nginx.conf, aby Nginx mógł się uruchomić
+mkdir -p certbot/conf
+touch certbot/conf/options-ssl-nginx.conf
+touch certbot/conf/ssl-dhparams.pem
+
 echo -e "${YELLOW}Uruchamianie kontenerów Docker...${NC}"
-run_docker_compose up -d
+run_docker_compose down
+run_docker_compose up -d --force-recreate
 
 # Sprawdzanie czy uruchomienie się powiodło
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}Kontenery zostały uruchomione pomyślnie!${NC}"
-    echo -e "${GREEN}Strona jest dostępna pod adresem: http://localhost${NC}"
-    echo -e "${GREEN}Strona jest dostępna pod adresem: http://$domain${NC}"
+    
+    # Dajemy chwilę na uruchomienie Nginx
+    echo -e "${YELLOW}Czekam 5 sekund, aby Nginx mógł się uruchomić...${NC}"
+    sleep 5
+    
+    echo -e "${GREEN}Strona powinna być dostępna pod adresem: http://localhost${NC}"
+    echo -e "${GREEN}Strona powinna być dostępna pod adresem: http://$domain${NC}"
     
     # Testy diagnostyczne
     echo -e "${YELLOW}Wykonuję testy diagnostyczne...${NC}"
     echo -e "Sprawdzanie lokalnego dostępu do serwera:"
-    curl -I http://localhost
+    curl -I http://localhost || echo -e "${RED}Brak dostępu do localhost${NC}"
     
     echo -e "\nSprawdzanie dostępu przez IP:"
     ip_local=$(hostname -I | awk '{print $1}')
     echo "Lokalne IP: $ip_local"
-    curl -I http://$ip_local
+    curl -I http://$ip_local || echo -e "${RED}Brak dostępu przez lokalne IP${NC}"
     
     # Sprawdzanie nazwy sieci kontenera
     container_id=$(run_docker_compose ps -q nginx)
     echo -e "\nID kontenera Nginx: $container_id"
     
-    network_name=$(docker inspect -f '{{range $key, $value := .NetworkSettings.Networks}}{{$key}}{{end}}' $container_id)
-    echo -e "Nazwa sieci: $network_name"
+    if [ -n "$container_id" ]; then
+        network_name=$(docker inspect -f '{{range $key, $value := .NetworkSettings.Networks}}{{$key}}{{end}}' $container_id)
+        echo -e "Nazwa sieci: $network_name"
+        
+        # Sprawdzenie, czy Nginx nasłuchuje wewnątrz kontenera
+        echo -e "\nSprawdzanie, czy Nginx nasłuchuje wewnątrz kontenera:"
+        docker exec -it $container_id netstat -tuln || echo -e "${RED}Nie można sprawdzić portów wewnątrz kontenera${NC}"
+    else
+        echo -e "${RED}Nie można znaleźć kontenera Nginx${NC}"
+    fi
     
     # Konfiguracja Let's Encrypt
     if [ $setup_letsencrypt -eq 1 ]; then
@@ -102,16 +121,16 @@ if [ $? -eq 0 ]; then
             
             echo -e "${YELLOW}Testowy plik został utworzony. Teraz sprawdzę, czy jest dostępny lokalnie...${NC}"
             echo -e "Lokalny dostęp: http://localhost/.well-known/acme-challenge/test.txt"
-            curl -v http://localhost/.well-known/acme-challenge/test.txt
+            curl -v http://localhost/.well-known/acme-challenge/test.txt || echo -e "${RED}Brak dostępu do pliku testowego przez localhost${NC}"
             
             echo -e "\n${YELLOW}Sprawdzam dostęp z zewnątrz: http://$domain/.well-known/acme-challenge/test.txt${NC}"
-            curl -v --connect-timeout 10 http://$domain/.well-known/acme-challenge/test.txt
+            curl -v --connect-timeout 10 http://$domain/.well-known/acme-challenge/test.txt || echo -e "${RED}Brak dostępu do pliku testowego przez domenę${NC}"
             
             echo -e "\n${YELLOW}Sprawdzanie DNS domeny...${NC}"
-            host $domain
+            host $domain || echo -e "${RED}Nie można sprawdzić DNS dla domeny${NC}"
             
             echo -e "\n${YELLOW}Sprawdzenie połączenia do portu 80...${NC}"
-            nc -z -v -w5 $domain 80
+            nc -z -v -w5 $domain 80 || echo -e "${RED}Brak dostępu do portu 80 na domenie${NC}"
             
             echo -e "\n${YELLOW}Czy mimo tych testów chcesz spróbować pobrać certyfikat? (t/n)${NC}"
             read -r kontynuuj
@@ -147,6 +166,15 @@ if [ $? -eq 0 ]; then
             
             if [ $? -eq 0 ]; then
                 echo -e "${GREEN}Certyfikat Let's Encrypt został pomyślnie pobrany.${NC}"
+                
+                # Pobierz rekomendowane pliki konfiguracyjne SSL
+                curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > certbot/conf/options-ssl-nginx.conf
+                curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > certbot/conf/ssl-dhparams.pem
+                
+                # Odkomentuj konfigurację HTTPS w pliku Nginx
+                sed -i 's/# server {/server {/g' nginx/conf.d/default.conf
+                sed -i 's/#     /    /g' nginx/conf.d/default.conf
+                
                 echo -e "${YELLOW}Restartowanie kontenerów, aby zastosować certyfikat...${NC}"
                 run_docker_compose restart nginx
                 echo -e "${GREEN}Strona jest teraz dostępna pod adresem: https://$domain${NC}"
