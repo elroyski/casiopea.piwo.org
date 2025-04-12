@@ -65,6 +65,12 @@ mkdir -p certbot/www/.well-known/acme-challenge
 mkdir -p certbot/conf
 mkdir -p nginx/conf.d
 
+# Tworzenie katalogów dla Unifi Controller
+mkdir -p unifi/config
+mkdir -p unifi/data
+mkdir -p unifi/logs
+mkdir -p unifi/run
+
 # Upewniamy się, że skrypt znajdzie lub utworzy plik docker-compose.yml
 if [ ! -f "docker-compose.yml" ]; then
     echo -e "${YELLOW}Plik docker-compose.yml nie istnieje. Tworzę domyślny plik...${NC}"
@@ -105,13 +111,40 @@ services:
     networks:
       - cassiopeia-network
 
+  unifi-controller:
+    image: linuxserver/unifi-controller:latest
+    container_name: unifi-controller
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Warsaw
+      - MEM_LIMIT=1024M #optional
+    volumes:
+      - ./unifi/config:/config
+      - ./unifi/data:/data
+      - ./unifi/logs:/logs
+      - ./unifi/run:/run
+    ports:
+      - 3478:3478/udp
+      - 10001:10001/udp
+      - 8080:8080
+      - 8443:8443
+      - 1900:1900/udp #optional
+      - 8843:8843 #optional
+      - 8880:8880 #optional
+      - 6789:6789 #optional
+      - 5514:5514/udp #optional
+    restart: unless-stopped
+    networks:
+      - cassiopeia-network
+
 networks:
   cassiopeia-network:
     driver: bridge
 EOF
 fi
 
-# Upewniamy się, że nginx ma tylko konfigurację HTTP
+# Dodajemy proxy_pass dla Unifi w konfiguracji Nginx
 cat > nginx/conf.d/default.conf << EOF
 server {
     listen 80;
@@ -127,6 +160,17 @@ server {
         root /usr/share/nginx/html;
         index index.php index.html index.htm;
         try_files \$uri \$uri/ /index.php?\$query_string;
+    }
+    
+    # Proxy dla Unifi Controller
+    location /unifi/ {
+        proxy_pass https://unifi-controller:8443/;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 90;
+        proxy_ssl_verify off;
     }
     
     # PHP
@@ -161,6 +205,7 @@ if [ $? -eq 0 ]; then
     
     echo -e "${GREEN}Strona powinna być dostępna pod adresem: http://localhost${NC}"
     echo -e "${GREEN}Strona powinna być dostępna pod adresem: http://$domain${NC}"
+    echo -e "${GREEN}Unifi Controller dostępny pod: http://localhost:8443 lub http://$domain/unifi/${NC}"
     
     # Testy diagnostyczne
     echo -e "${YELLOW}Wykonuję testy diagnostyczne...${NC}"
@@ -308,6 +353,17 @@ server {
     location / {
         try_files \$uri \$uri/ /index.php?\$query_string;
     }
+
+    # Proxy dla Unifi Controller pod HTTPS
+    location /unifi/ {
+        proxy_pass https://unifi-controller:8443/;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 90;
+        proxy_ssl_verify off;
+    }
     
     # PHP
     location ~ \.php$ {
@@ -335,6 +391,7 @@ EOF
                 echo -e "${YELLOW}Restartowanie kontenerów, aby zastosować certyfikat...${NC}"
                 run_docker_compose restart nginx
                 echo -e "${GREEN}Strona jest teraz dostępna pod adresem: https://$domain${NC}"
+                echo -e "${GREEN}Unifi Controller dostępny pod: https://$domain/unifi/ lub https://localhost:8443${NC}"
             else
                 echo -e "${RED}Nie udało się pobrać certyfikatu Let's Encrypt.${NC}"
                 echo -e "${RED}Upewnij się, że domena $domain wskazuje na ten serwer i port 80 jest dostępny z internetu.${NC}"
