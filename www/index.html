@@ -4,27 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CASSIOPEIA.PIWO.ORG</title>
-    <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.2/dist/terminal.min.css" />
-    <link rel="stylesheet" href="css/terminal.css" />
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/terminal.css">
 </head>
-<body class="terminal">
+<body>
     <div class="container">
-        <div class="terminal-nav">
-            <header class="terminal-logo">
-                <div class="logo terminal-prompt">
-                    <span class="no-style">cassiopeia.piwo.org</span>
-                    <span class="terminal-prompt">[SP9TW]</span>
-                </div>
-            </header>
-            <nav class="terminal-menu">
-                <ul>
-                    <li><a class="menu-item" href="#services">Usługi</a></li>
-                    <li><a class="menu-item" href="#about">O systemie</a></li>
-                    <li><a class="menu-item" href="#help">Pomoc</a></li>
-                </ul>
-            </nav>
-        </div>
+        <header>
+            <h1>CASSIOPEIA.PIWO.ORG</h1>
+            <p class="subtitle">SP9TW // Piastów Cluster</p>
+        </header>
 
         <div class="ascii-art">
 <pre>
@@ -39,116 +27,27 @@ Y88b  d88P d8888888888 Y88b  d88P Y88b  d88P   888   Y88b. .d88P 888        888 
 </pre>
         </div>
 
-        <div class="terminal-prompt">
-            <p>Witaj w systemie CASSIOPEIA. Wprowadź polecenie, aby kontynuować.</p>
-        </div>
-
-        <div class="terminal-card">
-            <header>Terminal</header>
-            <div id="terminal-output">
-                <!-- tutaj będą wyświetlane wyniki poleceń -->
-                <div class="terminal-line">~$ <span class="blink">▋</span></div>
-            </div>
-        </div>
-
-        <div class="terminal-prompt terminal-input-line">
-            <label for="cmd">~$</label>
-            <input type="text" id="cmd" class="terminal-input" autofocus />
-        </div>
-
         <section id="services">
-            <div class="terminal-card">
-                <header>Dostępne usługi</header>
-                <div>
-                    <table class="terminal-table">
-                        <thead>
-                            <tr>
-                                <th>Usługa</th>
-                                <th>Port</th>
-                                <th>Status</th>
-                                <th>Opis</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>SSH</td>
-                                <td>22</td>
-                                <td class="success">aktywny</td>
-                                <td>Bezpieczny dostęp zdalny</td>
-                            </tr>
-                            <tr>
-                                <td>HTTP</td>
-                                <td>80</td>
-                                <td class="success">aktywny</td>
-                                <td>Serwer WWW</td>
-                            </tr>
-                            <tr>
-                                <td>HTTPS</td>
-                                <td>443</td>
-                                <td class="success">aktywny</td>
-                                <td>Szyfrowany serwer WWW</td>
-                            </tr>
-                            <tr>
-                                <td>MySQL</td>
-                                <td>3306</td>
-                                <td class="warning">zabezpieczony</td>
-                                <td>Baza danych</td>
-                            </tr>
-                            <tr>
-                                <td>Minecraft</td>
-                                <td>25565</td>
-                                <td class="error">wyłączony</td>
-                                <td>Serwer gry</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <h2>// Usługi</h2>
+            <div class="content-block">
+                <!-- Miejsce na linki do usług -->
             </div>
         </section>
 
         <section id="about">
-            <div class="terminal-card">
-                <header>Informacje o systemie</header>
-                <div>
-                    <p><span class="terminal-prompt">Nazwa:</span> CASSIOPEIA.PIWO.ORG</p>
-                    <p><span class="terminal-prompt">System:</span> Debian GNU/Linux 11 (bullseye)</p>
-                    <p><span class="terminal-prompt">Jądro:</span> Linux 5.10.0-20-amd64</p>
-                    <p><span class="terminal-prompt">Architektura:</span> x86_64</p>
-                    <p><span class="terminal-prompt">Środowisko:</span> Docker 20.10.5</p>
-                    <p><span class="terminal-prompt">Uptime:</span> <span id="uptime">0 dni, 0 godzin, 0 minut</span></p>
-                </div>
+            <h2>// System</h2>
+            <div class="content-block">
+                <p><strong>OS:</strong> Debian GNU/Linux 11 (bullseye)</p>
+                <p><strong>Kernel:</strong> Linux 5.10.0-20-amd64</p>
+                <p><strong>Arch:</strong> x86_64</p>
+                <p><strong>Host:</strong> cassiopeia.piwo.org</p>
+                <p><strong>Docker:</strong> 20.10.5</p>
             </div>
         </section>
 
-        <section id="help">
-            <div class="terminal-card">
-                <header>Dostępne polecenia</header>
-                <div>
-                    <dl>
-                        <dt>help</dt>
-                        <dd>Wyświetla listę dostępnych poleceń</dd>
-
-                        <dt>ls</dt>
-                        <dd>Wyświetla listę dostępnych usług</dd>
-
-                        <dt>status</dt>
-                        <dd>Sprawdza status systemu</dd>
-
-                        <dt>uname -a</dt>
-                        <dd>Wyświetla informacje o systemie</dd>
-
-                        <dt>clear</dt>
-                        <dd>Czyści terminal</dd>
-                    </dl>
-                </div>
-            </div>
-        </section>
-
-        <footer class="terminal-footer">
-            <p>&copy; 2023 CASSIOPEIA.PIWO.ORG | SP9TW | <span class="error">Poziom dostępu: Publiczny</span></p>
+        <footer>
+            <p>&copy; 2023 CASSIOPEIA.PIWO.ORG | <span class="highlight">SP9TW</span></p>
         </footer>
     </div>
-
-    <script src="js/terminal.js"></script>
 </body>
 </html> 

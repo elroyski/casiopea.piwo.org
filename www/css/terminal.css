@@ -1,245 +1,10 @@
 :root {
-    --global-font-size: 14px;
-    --global-line-height: 1.4em;
-    --font-stack: 'VT323', monospace;
-    --background-color: #101010;
-    --page-width: 60em;
-    --font-color: #3f3;
-    --invert-font-color: #1c1c1c;
-    --secondary-color: #ff00ff;
-    --tertiary-color: #00aaff;
-    --error-color: #ff6188;
-    --warning-color: #ffd866;
-    --success-color: #a9dc76;
-    --primary-color: #3f3;
-    --animation-duration: 1s;
-}
-
-/* Cyfrowe "zakłócenia" i skanujące linie */
-body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    background-image: linear-gradient(
-        0deg,
-        rgba(29, 36, 32, 0.5) 1px,
-        transparent 1px
-    );
-    background-size: 100% 2px;
-    opacity: 0.15;
-    pointer-events: none;
-}
-
-body::after {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -2;
-    background: radial-gradient(
-        circle at center,
-        rgba(0, 90, 0, 0.1) 0%,
-        rgba(0, 0, 0, 0.3) 100%
-    );
-    pointer-events: none;
-}
-
-/* Dostosowanie głównego kontenera */
-.container {
-    max-width: var(--page-width);
-    margin: 0 auto;
-    padding: 2em 0.5em;
-}
-
-/* ASCII art */
-.ascii-art {
-    margin: 1.5em auto;
-    text-align: center;
-    color: var(--secondary-color);
-    overflow-x: auto;
-}
-
-.ascii-art pre {
-    display: inline-block;
-    text-align: left;
-    margin: 0 auto;
-    font-size: 0.6em;
-    line-height: 1.2em;
-}
-
-/* Terminal card styling */
-.terminal-card {
-    border: 1px solid var(--primary-color);
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
-    margin-bottom: 2em;
-}
-
-.terminal-card header {
-    background-color: var(--primary-color);
-    color: var(--invert-font-color);
-    font-weight: bold;
-}
-
-/* Terminal output */
-#terminal-output {
-    min-height: 150px;
-    max-height: 200px;
-    overflow-y: auto;
-    font-family: var(--font-stack);
-    padding: 0.5em;
-}
-
-.terminal-line {
-    margin-bottom: 0.3em;
-    line-height: 1.3em;
-}
-
-/* Terminal input line */
-.terminal-input-line {
-    display: flex;
-    align-items: center;
-    margin: 1em 0;
-}
-
-.terminal-input {
-    background: transparent;
-    color: var(--font-color);
-    border: none;
-    font-family: var(--font-stack);
-    font-size: var(--global-font-size);
-    flex-grow: 1;
-    outline: none;
-    margin-left: 0.5em;
-}
-
-/* Blinking cursor */
-.blink {
-    animation: blink-animation 1s steps(2, start) infinite;
-}
-
-@keyframes blink-animation {
-    to {
-        visibility: hidden;
-    }
-}
-
-/* Status styling */
-.success {
-    color: var(--success-color);
-}
-
-.warning {
-    color: var(--warning-color);
-}
-
-.error {
-    color: var(--error-color);
-}
-
-/* Footer */
-.terminal-footer {
-    margin-top: 3em;
-    text-align: center;
-    font-size: 0.8em;
-    color: #666;
-}
-
-/* Responsive adjustments */
-@media only screen and (max-width: 600px) {
-    .ascii-art pre {
-        font-size: 0.35em;
-        line-height: 1.1em;
-    }
-    
-    .terminal-table th,
-    .terminal-table td {
-        padding: 0.3em;
-        font-size: 0.9em;
-    }
-}
-
-@media only screen and (min-width: 601px) and (max-width: 900px) {
-    .ascii-art pre {
-        font-size: 0.45em;
-        line-height: 1.2em;
-    }
-}
-
-@media only screen and (min-width: 901px) {
-    .ascii-art pre {
-        font-size: 0.6em;
-        line-height: 1.2em;
-    }
-}
-
-/* CRT efekt dla całego ekranu */
-@keyframes flicker {
-    0% {
-        opacity: 0.97;
-    }
-    5% {
-        opacity: 0.95;
-    }
-    10% {
-        opacity: 0.97;
-    }
-    15% {
-        opacity: 0.94;
-    }
-    20% {
-        opacity: 0.98;
-    }
-    50% {
-        opacity: 0.95;
-    }
-    80% {
-        opacity: 0.96;
-    }
-    100% {
-        opacity: 0.98;
-    }
-}
-
-body {
-    animation: flicker 0.3s infinite;
-}
-
-/* Stylowanie tabel */
-.terminal-table {
-    margin: 0.5em 0;
-}
-
-.terminal-table th,
-.terminal-table td {
-    border: 1px solid rgba(63, 255, 63, 0.3);
-}
-
-/* Stylowanie linków */
-a {
-    position: relative;
-    display: inline-block;
-}
-
-a::after {
-    content: "";
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    background-color: var(--primary-color);
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-}
-
-a:hover::after {
-    transform: scaleX(1);
+    --background-color: #0a0a0a;
+    --text-color: #33cc33;
+    --highlight-color: #ff00ff;
+    --link-color: #00aaff;
+    --secondary-color: #999999;
+    --border-color: #333333;
 }
 
 * {
@@ -250,208 +15,109 @@ a:hover::after {
 
 body {
     background-color: var(--background-color);
-    font-family: 'Fira Code', monospace;
-    color: var(--font-color);
-    margin: 0;
-    padding: 20px;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-}
-
-.terminal {
-    width: 100%;
-    max-width: 1200px;
-    background-color: var(--background-color);
-    border: 1px solid #333;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    display: flex;
-    flex-direction: column;
-    margin-top: 10px;
-}
-
-.terminal-header {
-    background-color: var(--primary-color);
-    padding: 10px 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #333;
-}
-
-.terminal-title {
+    color: var(--text-color);
+    font-family: 'Inconsolata', monospace;
     font-size: 16px;
-    font-weight: 500;
-    color: #ccc;
-}
-
-.terminal-content {
+    line-height: 1.4;
     padding: 20px;
-    min-height: 600px;
-    font-size: 14px;
-    overflow-wrap: break-word;
-    line-height: 1.6;
 }
 
-.terminal-content::-webkit-scrollbar {
-    width: 8px;
-}
-
-.terminal-content::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 255, 0, 0.3);
-    border-radius: 4px;
-}
-
-.terminal-content::-webkit-scrollbar-track {
-    background-color: var(--background-color);
-}
-
-/* Responzywny ASCII art */
-.terminal-content pre {
-    text-align: center;
-    font-size: 10px;
-    white-space: pre;
-    overflow-x: auto;
+.container {
+    max-width: 1200px;
     margin: 0 auto;
 }
 
-/* Różne rozdzielczości ekranów dla ASCII art */
-@media (min-width: 576px) {
-    .terminal-content pre {
-        font-size: 12px;
-    }
+header {
+    margin: 1em 0 2em;
+    text-align: center;
 }
 
-@media (min-width: 768px) {
-    .terminal-content pre {
+h1 {
+    font-size: 2.5em;
+    margin-bottom: 0.2em;
+}
+
+.subtitle {
+    color: var(--secondary-color);
+    font-size: 1.2em;
+}
+
+/* ASCII art */
+.ascii-art {
+    overflow-x: auto;
+    margin: 1em 0 2em;
+    text-align: center;
+    color: var(--highlight-color);
+}
+
+.ascii-art pre {
+    display: inline-block;
+    font-size: 0.7em;
+    line-height: 1.2em;
+    text-align: left;
+}
+
+section {
+    margin: 2em 0;
+}
+
+h2 {
+    font-size: 1.5em;
+    margin-bottom: 0.5em;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.3em;
+}
+
+.content-block {
+    padding: 1em;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+strong {
+    color: var(--highlight-color);
+    font-weight: normal;
+}
+
+p {
+    margin-bottom: 0.8em;
+}
+
+a {
+    color: var(--link-color);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+footer {
+    margin-top: 4em;
+    padding-top: 1em;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    color: var(--secondary-color);
+    font-size: 0.9em;
+}
+
+.highlight {
+    color: var(--highlight-color);
+}
+
+/* Responsive adjustments */
+@media only screen and (max-width: 600px) {
+    body {
         font-size: 14px;
     }
-}
-
-@media (min-width: 992px) {
-    .terminal-content pre {
-        font-size: 16px;
+    
+    .ascii-art pre {
+        font-size: 0.5em;
     }
 }
 
-.input-line {
-    display: flex;
-    margin: 10px 0;
-}
-
-.user {
-    color: var(--primary-color);
-    margin-right: 5px;
-}
-
-#terminal-input {
-    background: transparent;
-    border: none;
-    color: var(--font-color);
-    font-family: 'Fira Code', monospace;
-    font-size: 14px;
-    flex-grow: 1;
-    outline: none;
-}
-
-#output {
-    margin-top: 20px;
-    white-space: pre-wrap;
-}
-
-.command {
-    margin-bottom: 10px;
-}
-
-.result {
-    margin-bottom: 20px;
-    color: #ccc;
-}
-
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.7);
-}
-
-.modal-content {
-    background-color: var(--background-color);
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #444;
-    width: 80%;
-    max-width: 500px;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #444;
-    padding-bottom: 10px;
-}
-
-.modal-header h2 {
-    margin: 0;
-    color: var(--font-color);
-}
-
-.close-modal {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.close-modal:hover,
-.close-modal:focus {
-    color: var(--font-color);
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.modal-body {
-    padding: 20px 0;
-}
-
-button {
-    background-color: #333;
-    color: var(--font-color);
-    border: 1px solid #444;
-    padding: 8px 16px;
-    margin-right: 10px;
-    cursor: pointer;
-    font-family: 'Fira Code', monospace;
-}
-
-button:hover {
-    background-color: #444;
-}
-
-/* Dodaję nowy styl dla banera-kontenera, aby był centralnie wyrównany */
-.banner-container {
-    display: flex;
-    justify-content: center;
-    margin: 20px 0;
-    width: 100%;
-}
-
-.banner {
-    text-align: center;
-    color: #0f0;
-    font-weight: bold;
-    margin: 0 auto;
-    padding: 10px;
-    background-color: rgba(0, 0, 0, 0.5);
-    border: 1px solid #0f0;
-    border-radius: 4px;
-    box-shadow: 0 0 10px #0f0;
-    max-width: 90%;
+@media only screen and (min-width: 601px) and (max-width: 900px) {
+    .ascii-art pre {
+        font-size: 0.6em;
+    }
 } 
