@@ -1,18 +1,245 @@
 :root {
-    --bg-color: #121212;
-    --terminal-bg: #1c1c1c;
-    --terminal-header: #2a2a2a;
-    --terminal-text: #f0f0f0;
-    --terminal-prompt: #50fa7b;
-    --terminal-success: #50fa7b;
-    --terminal-error: #ff5555;
-    --terminal-warning: #f1fa8c;
-    --text-dim: rgba(0, 255, 0, 0.7);
-    --text-highlight: #00ffcc;
-    --path-color: #7cd2ff;
-    --user-color: #00ff7f;
-    --command-color: #ffffff;
-    --link-color: #3399ff;
+    --global-font-size: 14px;
+    --global-line-height: 1.4em;
+    --font-stack: 'VT323', monospace;
+    --background-color: #101010;
+    --page-width: 60em;
+    --font-color: #3f3;
+    --invert-font-color: #1c1c1c;
+    --secondary-color: #ff00ff;
+    --tertiary-color: #00aaff;
+    --error-color: #ff6188;
+    --warning-color: #ffd866;
+    --success-color: #a9dc76;
+    --primary-color: #3f3;
+    --animation-duration: 1s;
+}
+
+/* Cyfrowe "zakłócenia" i skanujące linie */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background-image: linear-gradient(
+        0deg,
+        rgba(29, 36, 32, 0.5) 1px,
+        transparent 1px
+    );
+    background-size: 100% 2px;
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    background: radial-gradient(
+        circle at center,
+        rgba(0, 90, 0, 0.1) 0%,
+        rgba(0, 0, 0, 0.3) 100%
+    );
+    pointer-events: none;
+}
+
+/* Dostosowanie głównego kontenera */
+.container {
+    max-width: var(--page-width);
+    margin: 0 auto;
+    padding: 2em 0.5em;
+}
+
+/* ASCII art */
+.ascii-art {
+    margin: 1.5em auto;
+    text-align: center;
+    color: var(--secondary-color);
+    overflow-x: auto;
+}
+
+.ascii-art pre {
+    display: inline-block;
+    text-align: left;
+    margin: 0 auto;
+    font-size: 0.6em;
+    line-height: 1.2em;
+}
+
+/* Terminal card styling */
+.terminal-card {
+    border: 1px solid var(--primary-color);
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+    margin-bottom: 2em;
+}
+
+.terminal-card header {
+    background-color: var(--primary-color);
+    color: var(--invert-font-color);
+    font-weight: bold;
+}
+
+/* Terminal output */
+#terminal-output {
+    min-height: 150px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-family: var(--font-stack);
+    padding: 0.5em;
+}
+
+.terminal-line {
+    margin-bottom: 0.3em;
+    line-height: 1.3em;
+}
+
+/* Terminal input line */
+.terminal-input-line {
+    display: flex;
+    align-items: center;
+    margin: 1em 0;
+}
+
+.terminal-input {
+    background: transparent;
+    color: var(--font-color);
+    border: none;
+    font-family: var(--font-stack);
+    font-size: var(--global-font-size);
+    flex-grow: 1;
+    outline: none;
+    margin-left: 0.5em;
+}
+
+/* Blinking cursor */
+.blink {
+    animation: blink-animation 1s steps(2, start) infinite;
+}
+
+@keyframes blink-animation {
+    to {
+        visibility: hidden;
+    }
+}
+
+/* Status styling */
+.success {
+    color: var(--success-color);
+}
+
+.warning {
+    color: var(--warning-color);
+}
+
+.error {
+    color: var(--error-color);
+}
+
+/* Footer */
+.terminal-footer {
+    margin-top: 3em;
+    text-align: center;
+    font-size: 0.8em;
+    color: #666;
+}
+
+/* Responsive adjustments */
+@media only screen and (max-width: 600px) {
+    .ascii-art pre {
+        font-size: 0.35em;
+        line-height: 1.1em;
+    }
+    
+    .terminal-table th,
+    .terminal-table td {
+        padding: 0.3em;
+        font-size: 0.9em;
+    }
+}
+
+@media only screen and (min-width: 601px) and (max-width: 900px) {
+    .ascii-art pre {
+        font-size: 0.45em;
+        line-height: 1.2em;
+    }
+}
+
+@media only screen and (min-width: 901px) {
+    .ascii-art pre {
+        font-size: 0.6em;
+        line-height: 1.2em;
+    }
+}
+
+/* CRT efekt dla całego ekranu */
+@keyframes flicker {
+    0% {
+        opacity: 0.97;
+    }
+    5% {
+        opacity: 0.95;
+    }
+    10% {
+        opacity: 0.97;
+    }
+    15% {
+        opacity: 0.94;
+    }
+    20% {
+        opacity: 0.98;
+    }
+    50% {
+        opacity: 0.95;
+    }
+    80% {
+        opacity: 0.96;
+    }
+    100% {
+        opacity: 0.98;
+    }
+}
+
+body {
+    animation: flicker 0.3s infinite;
+}
+
+/* Stylowanie tabel */
+.terminal-table {
+    margin: 0.5em 0;
+}
+
+.terminal-table th,
+.terminal-table td {
+    border: 1px solid rgba(63, 255, 63, 0.3);
+}
+
+/* Stylowanie linków */
+a {
+    position: relative;
+    display: inline-block;
+}
+
+a::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: var(--primary-color);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+a:hover::after {
+    transform: scaleX(1);
 }
 
 * {
@@ -22,9 +249,9 @@
 }
 
 body {
-    background-color: var(--bg-color);
+    background-color: var(--background-color);
     font-family: 'Fira Code', monospace;
-    color: var(--terminal-text);
+    color: var(--font-color);
     margin: 0;
     padding: 20px;
     min-height: 100vh;
@@ -36,7 +263,7 @@ body {
 .terminal {
     width: 100%;
     max-width: 1200px;
-    background-color: var(--terminal-bg);
+    background-color: var(--background-color);
     border: 1px solid #333;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     display: flex;
@@ -45,7 +272,7 @@ body {
 }
 
 .terminal-header {
-    background-color: var(--terminal-header);
+    background-color: var(--primary-color);
     padding: 10px 15px;
     display: flex;
     justify-content: space-between;
@@ -77,7 +304,7 @@ body {
 }
 
 .terminal-content::-webkit-scrollbar-track {
-    background-color: var(--terminal-bg);
+    background-color: var(--background-color);
 }
 
 /* Responzywny ASCII art */
@@ -114,14 +341,14 @@ body {
 }
 
 .user {
-    color: var(--terminal-prompt);
+    color: var(--primary-color);
     margin-right: 5px;
 }
 
 #terminal-input {
     background: transparent;
     border: none;
-    color: var(--terminal-text);
+    color: var(--font-color);
     font-family: 'Fira Code', monospace;
     font-size: 14px;
     flex-grow: 1;
@@ -142,18 +369,6 @@ body {
     color: #ccc;
 }
 
-.error {
-    color: var(--terminal-error);
-}
-
-.success {
-    color: var(--terminal-success);
-}
-
-.warning {
-    color: var(--terminal-warning);
-}
-
 .modal {
     display: none;
     position: fixed;
@@ -167,7 +382,7 @@ body {
 }
 
 .modal-content {
-    background-color: var(--terminal-bg);
+    background-color: var(--background-color);
     margin: 15% auto;
     padding: 20px;
     border: 1px solid #444;
@@ -185,7 +400,7 @@ body {
 
 .modal-header h2 {
     margin: 0;
-    color: var(--terminal-text);
+    color: var(--font-color);
 }
 
 .close-modal {
@@ -197,7 +412,7 @@ body {
 
 .close-modal:hover,
 .close-modal:focus {
-    color: var(--terminal-text);
+    color: var(--font-color);
     text-decoration: none;
     cursor: pointer;
 }
@@ -208,7 +423,7 @@ body {
 
 button {
     background-color: #333;
-    color: var(--terminal-text);
+    color: var(--font-color);
     border: 1px solid #444;
     padding: 8px 16px;
     margin-right: 10px;

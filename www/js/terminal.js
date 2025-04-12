@@ -420,4 +420,187 @@ function setupMatrixBackground() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     });
-} 
+}
+
+// Dane systemowe
+const startDate = new Date();
+
+// Aktualizuj czas działania
+function updateUptime() {
+    const now = new Date();
+    const diff = Math.floor((now - startDate) / 1000);
+    
+    const days = Math.floor(diff / 86400);
+    const hours = Math.floor((diff % 86400) / 3600);
+    const minutes = Math.floor((diff % 3600) / 60);
+    const seconds = diff % 60;
+    
+    const uptimeText = `${days} dni, ${hours} godzin, ${minutes} minut, ${seconds} sekund`;
+    document.getElementById('uptime').textContent = uptimeText;
+}
+
+// Aktualizuj co sekundę
+setInterval(updateUptime, 1000);
+
+// Obsługa terminala
+const terminal = {
+    output: document.getElementById('terminal-output'),
+    input: document.getElementById('cmd'),
+    
+    // Przetwarzanie polecenia
+    processCommand(command) {
+        this.addLine(`~$ ${command}`);
+        
+        // Usuwamy dodatkowe spacje i dzielimy na poszczególne części polecenia
+        const args = command.trim().split(' ');
+        const cmd = args[0].toLowerCase();
+        
+        switch(cmd) {
+            case 'help':
+                this.showHelp();
+                break;
+            case 'clear':
+                this.clear();
+                break;
+            case 'ls':
+                this.listServices();
+                break;
+            case 'status':
+                this.checkStatus();
+                break;
+            case 'uname':
+                if (args[1] === '-a') {
+                    this.showSystemInfo();
+                } else {
+                    this.addLine('cassiopeia.piwo.org');
+                }
+                break;
+            case 'whoami':
+                this.addLine('guest');
+                break;
+            case 'date':
+                this.addLine(new Date().toString());
+                break;
+            case 'echo':
+                this.addLine(args.slice(1).join(' '));
+                break;
+            case 'uptime':
+                const uptime = document.getElementById('uptime').textContent;
+                this.addLine(`Czas działania: ${uptime}`);
+                break;
+            case 'login':
+                this.addLine('Błąd: Brak uprawnień do logowania. Dostęp tylko dla administratorów.');
+                break;
+            case '':
+                // Puste polecenie
+                break;
+            default:
+                this.addLine(`bash: ${cmd}: nie znaleziono polecenia`);
+        }
+        
+        // Dodaj nową pustą linię z kursorem
+        this.addPrompt();
+        
+        // Przewiń do dołu
+        this.output.scrollTop = this.output.scrollHeight;
+    },
+    
+    // Dodawanie nowej linii tekstu
+    addLine(text, className = '') {
+        const line = document.createElement('div');
+        line.className = `terminal-line ${className}`;
+        line.textContent = text;
+        
+        // Usunięcie mrugającego kursora z ostatniej linii
+        const lines = this.output.querySelectorAll('.terminal-line');
+        if (lines.length > 0) {
+            const lastLine = lines[lines.length - 1];
+            if (lastLine.innerHTML.includes('<span class="blink">')) {
+                this.output.removeChild(lastLine);
+            }
+        }
+        
+        this.output.appendChild(line);
+    },
+    
+    // Dodawanie znaku zachęty z kursorem
+    addPrompt() {
+        const prompt = document.createElement('div');
+        prompt.className = 'terminal-line';
+        prompt.innerHTML = '~$ <span class="blink">▋</span>';
+        this.output.appendChild(prompt);
+    },
+    
+    // Czyszczenie terminala
+    clear() {
+        this.output.innerHTML = '';
+    },
+    
+    // Wyświetlanie pomocy
+    showHelp() {
+        this.addLine('Dostępne polecenia:');
+        this.addLine('  help           - Wyświetla tę pomoc');
+        this.addLine('  ls             - Wyświetla dostępne usługi');
+        this.addLine('  status         - Sprawdza status systemu');
+        this.addLine('  uname -a       - Wyświetla informacje o systemie');
+        this.addLine('  clear          - Czyści terminal');
+        this.addLine('  whoami         - Pokazuje aktualnego użytkownika');
+        this.addLine('  date           - Wyświetla aktualną datę i czas');
+        this.addLine('  echo [tekst]   - Wyświetla podany tekst');
+        this.addLine('  uptime         - Wyświetla czas działania systemu');
+    },
+    
+    // Wyświetlanie listy usług
+    listServices() {
+        this.addLine('Dostępne usługi:');
+        this.addLine('  ssh            - port 22    - [ACTIVE]');
+        this.addLine('  http           - port 80    - [ACTIVE]');
+        this.addLine('  https          - port 443   - [ACTIVE]');
+        this.addLine('  mysql          - port 3306  - [PROTECTED]');
+        this.addLine('  minecraft      - port 25565 - [INACTIVE]');
+    },
+    
+    // Sprawdzanie statusu systemu
+    checkStatus() {
+        this.addLine('Status systemu:');
+        this.addLine('  System: Online', 'success');
+        this.addLine('  Obciążenie CPU: 12%', 'success');
+        this.addLine('  Użycie pamięci: 34%', 'success');
+        this.addLine('  Dysk: 23% zajęte', 'success');
+        this.addLine('  Sieć: Aktywna', 'success');
+        this.addLine('  Bezpieczeństwo: Poziom 2 (Standardowy)', 'warning');
+    },
+    
+    // Wyświetlanie informacji o systemie
+    showSystemInfo() {
+        this.addLine('Linux cassiopeia.piwo.org 5.10.0-20-amd64 #1 SMP Debian 5.10.158-2 (2022-12-13) x86_64 GNU/Linux');
+    }
+};
+
+// Inicjalizacja terminala po załadowaniu strony
+document.addEventListener('DOMContentLoaded', function() {
+    // Obsługa wprowadzania poleceń
+    terminal.input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const command = this.value;
+            terminal.processCommand(command);
+            this.value = '';
+        }
+    });
+    
+    // Dodaj pierwszy prompt przy starcie
+    if (terminal.output.querySelectorAll('.terminal-line').length === 0) {
+        terminal.addPrompt();
+    }
+    
+    // Ustawiamy focus na polu wprowadzania
+    terminal.input.focus();
+    
+    // Utrzymanie focusu na polu wprowadzania
+    document.addEventListener('click', function() {
+        terminal.input.focus();
+    });
+    
+    // Inicjalizacja licznika czasu działania
+    updateUptime();
+}); 
