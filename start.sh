@@ -14,6 +14,9 @@ email="admin@cassiopeia.piwo.org"  # Zmień na swój adres e-mail
 staging=0 # Ustaw na 1, aby testować konfigurację (nie generuje prawdziwych certyfikatów)
 setup_letsencrypt=1 # Ustaw na 0, aby pominąć konfigurację Let's Encrypt
 
+# Adres IP serwera do bezpośredniego dostępu
+server_ip="192.168.0.101"
+
 echo -e "${YELLOW}Pobieranie najnowszej wersji z repozytorium...${NC}"
 
 # Sprawdzanie czy repozytorium już istnieje
@@ -125,15 +128,15 @@ services:
       - ./unifi/logs:/logs
       - ./unifi/run:/run
     ports:
-      - 3478:3478/udp
-      - 10001:10001/udp
-      - 8080:8080
-      - 8443:8443
-      - 1900:1900/udp #optional
-      - 8843:8843 #optional
-      - 8880:8880 #optional
-      - 6789:6789 #optional
-      - 5514:5514/udp #optional
+      - ${server_ip}:3478:3478/udp
+      - ${server_ip}:10001:10001/udp
+      - ${server_ip}:8080:8080
+      - ${server_ip}:8443:8443
+      - ${server_ip}:1900:1900/udp #optional
+      - ${server_ip}:8843:8843 #optional
+      - ${server_ip}:8880:8880 #optional
+      - ${server_ip}:6789:6789 #optional
+      - ${server_ip}:5514:5514/udp #optional
     restart: unless-stopped
     networks:
       - cassiopeia-network
@@ -144,7 +147,7 @@ networks:
 EOF
 fi
 
-# Dodajemy proxy_pass dla Unifi w konfiguracji Nginx
+# Konfiguracja Nginx bez proxy pass do Unifi
 cat > nginx/conf.d/default.conf << EOF
 server {
     listen 80;
@@ -160,17 +163,6 @@ server {
         root /usr/share/nginx/html;
         index index.php index.html index.htm;
         try_files \$uri \$uri/ /index.php?\$query_string;
-    }
-    
-    # Proxy dla Unifi Controller
-    location /unifi/ {
-        proxy_pass https://unifi-controller:8443/;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_read_timeout 90;
-        proxy_ssl_verify off;
     }
     
     # PHP
@@ -205,7 +197,12 @@ if [ $? -eq 0 ]; then
     
     echo -e "${GREEN}Strona powinna być dostępna pod adresem: http://localhost${NC}"
     echo -e "${GREEN}Strona powinna być dostępna pod adresem: http://$domain${NC}"
-    echo -e "${GREEN}Unifi Controller dostępny pod: http://localhost:8443 lub http://$domain/unifi/${NC}"
+    echo -e "${GREEN}Unifi Controller dostępny pod: https://$server_ip:8443 (bezpośredni dostęp)${NC}"
+
+    # Sprawdzenie dostępu do UniFi
+    echo -e "${YELLOW}Sprawdzanie statusu Unifi Controller (może wymagać czasu na uruchomienie)...${NC}"
+    sleep 10 # Daj więcej czasu kontrolerowi na uruchomienie
+    curl -k -I https://$server_ip:8443 || echo -e "${RED}Brak dostępu do Unifi Controller na https://$server_ip:8443${NC}"
     
     # Testy diagnostyczne
     echo -e "${YELLOW}Wykonuję testy diagnostyczne...${NC}"
@@ -230,6 +227,15 @@ if [ $? -eq 0 ]; then
         docker exec -it $container_id netstat -tuln || echo -e "${RED}Nie można sprawdzić portów wewnątrz kontenera${NC}"
     else
         echo -e "${RED}Nie można znaleźć kontenera Nginx${NC}"
+    fi
+
+    # Sprawdź logi UniFi
+    echo -e "\n${YELLOW}Sprawdzanie logów Unifi Controller:${NC}"
+    unifi_id=$(run_docker_compose ps -q unifi-controller)
+    if [ -n "$unifi_id" ]; then
+        docker logs --tail 20 $unifi_id
+    else
+        echo -e "${RED}Nie można znaleźć kontenera Unifi Controller${NC}"
     fi
     
     # Konfiguracja Let's Encrypt
@@ -302,7 +308,7 @@ if [ $? -eq 0 ]; then
                 curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > certbot/conf/options-ssl-nginx.conf
                 curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > certbot/conf/ssl-dhparams.pem
                 
-                # Teraz dodajemy konfigurację HTTPS
+                # Teraz dodajemy konfigurację HTTPS (bez proxy_pass dla Unifi)
                 cat > nginx/conf.d/default.conf << EOF
 server {
     listen 80;
@@ -353,17 +359,6 @@ server {
     location / {
         try_files \$uri \$uri/ /index.php?\$query_string;
     }
-
-    # Proxy dla Unifi Controller pod HTTPS
-    location /unifi/ {
-        proxy_pass https://unifi-controller:8443/;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_read_timeout 90;
-        proxy_ssl_verify off;
-    }
     
     # PHP
     location ~ \.php$ {
@@ -391,7 +386,7 @@ EOF
                 echo -e "${YELLOW}Restartowanie kontenerów, aby zastosować certyfikat...${NC}"
                 run_docker_compose restart nginx
                 echo -e "${GREEN}Strona jest teraz dostępna pod adresem: https://$domain${NC}"
-                echo -e "${GREEN}Unifi Controller dostępny pod: https://$domain/unifi/ lub https://localhost:8443${NC}"
+                echo -e "${GREEN}Unifi Controller dostępny pod: https://$server_ip:8443 (bezpośredni dostęp)${NC}"
             else
                 echo -e "${RED}Nie udało się pobrać certyfikatu Let's Encrypt.${NC}"
                 echo -e "${RED}Upewnij się, że domena $domain wskazuje na ten serwer i port 80 jest dostępny z internetu.${NC}"
