@@ -3,31 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Casiopea - piwo.org</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f5f5f5;
-            flex-direction: column;
-        }
-        h1 {
-            font-size: 4rem;
-            color: #333;
-        }
-        p {
-            font-size: 1.5rem;
-            color: #666;
-            margin-top: 1rem;
-        }
-    </style>
+    <title>Casiopea Labs :: Terminal</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hack-font@3/build/web/hack.css">
+    <link rel="stylesheet" href="css/terminal.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
 </head>
 <body>
-    <h1>Cześć</h1>
-    <p>casiopea.piwo.org</p>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="dots">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+            </div>
+            <div class="title">casiopea.piwo.org :: terminal</div>
+        </div>
+        <div class="terminal-content">
+            <div class="ascii-art">
+<pre>
+ ██████╗ █████╗ ███████╗██╗ ██████╗ ██████╗ ███████╗ █████╗ 
+██╔════╝██╔══██╗██╔════╝██║██╔═══██╗██╔══██╗██╔════╝██╔══██╗
+██║     ███████║███████╗██║██║   ██║██████╔╝█████╗  ███████║
+██║     ██╔══██║╚════██║██║██║   ██║██╔═══╝ ██╔══╝  ██╔══██║
+╚██████╗██║  ██║███████║██║╚██████╔╝██║     ███████╗██║  ██║
+ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝ ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═╝
+=============================================================
+>> ELROY'S HOME NETWORK <<
+=============================================================
+</pre>
+            </div>
+            <div class="terminal-lines">
+                <div class="line">
+                    <span class="user">root@casiopea:</span><span class="path">~#</span> <span class="command" id="welcomeCommand"></span>
+                </div>
+                <div class="line output" id="welcomeOutput"></div>
+                
+                <div class="line">
+                    <span class="user">root@casiopea:</span><span class="path">~#</span> <span class="command" id="statusCommand"></span>
+                </div>
+                <div class="line output" id="statusOutput"></div>
+                
+                <div class="line">
+                    <span class="user">root@casiopea:</span><span class="path">~#</span> <span class="command" id="servicesCommand"></span>
+                </div>
+                <div class="line output" id="servicesOutput"></div>
+                
+                <div class="line">
+                    <span class="user">root@casiopea:</span><span class="path">~#</span> <span class="command" id="helpCommand"></span>
+                </div>
+                <div class="line output" id="helpOutput"></div>
+                
+                <div class="terminal-input">
+                    <span class="user">visitor@casiopea:</span><span class="path">~$</span> <span class="cursor-input"><input type="text" id="userInput" autofocus></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>DOSTĘP DO TERMINALA</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="login-form">
+                    <div class="input-group">
+                        <label for="username">Login:</label>
+                        <input type="text" id="username" placeholder="visitor">
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Hasło:</label>
+                        <input type="password" id="password" placeholder="********">
+                    </div>
+                    <div class="button-group">
+                        <button id="loginButton">ZALOGUJ</button>
+                        <button id="guestButton">GOŚĆ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/terminal.js"></script>
 </body>
 </html> 
