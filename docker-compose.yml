@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   nginx:
     image: nginx:alpine
@@ -11,4 +9,12 @@ services:
     restart: unless-stopped
     environment:
       - VIRTUAL_HOST=casiopea.piwo.org
-      - LETSENCRYPT_HOST=casiopea.piwo.org 
+      - LETSENCRYPT_HOST=casiopea.piwo.org
+    depends_on:
+      - php
+
+  php:
+    image: php:8.2-fpm-alpine
+    volumes:
+      - ./www:/usr/share/nginx/html
+    restart: unless-stopped 
