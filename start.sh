@@ -121,7 +121,7 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/Warsaw
-      - MEM_LIMIT=1024M #optional
+      - MEM_LIMIT=1024 #optional
     volumes:
       - ./unifi/config:/config
       - ./unifi/data:/data
