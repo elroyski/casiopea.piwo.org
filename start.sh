@@ -86,7 +86,7 @@ services:
       - php
     restart: always
     networks:
-      - casiopea-network
+      - cassiopea-network
 
   php:
     image: php:8.2-fpm-alpine
@@ -94,7 +94,7 @@ services:
       - ./www:/usr/share/nginx/html
     restart: always
     networks:
-      - casiopea-network
+      - cassiopea-network
 
   certbot:
     image: certbot/certbot
@@ -103,10 +103,10 @@ services:
       - ./certbot/www:/var/www/certbot
     command: /bin/sh -c "trap exit TERM; while :; do certbot renew; sleep 12h & wait \$\${!}; done;"
     networks:
-      - casiopea-network
+      - cassiopea-network
 
 networks:
-  casiopea-network:
+  cassiopea-network:
     driver: bridge
 EOF
 fi
