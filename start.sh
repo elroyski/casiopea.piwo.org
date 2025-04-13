@@ -160,12 +160,13 @@ services:
     container_name: cassiopeia-pihole
     image: pihole/pihole:latest
     ports:
-      - "8053:53/tcp"
-      - "8053:53/udp"
+      - "53:53/tcp"
+      - "53:53/udp"
       - "8888:80/tcp"
     environment:
       TZ: 'Europe/Warsaw'
-      WEBPASSWORD: 'casiopea'
+      FTLCONF_webserver_api_password: 'casiopea'
+      ServerIP: '192.168.0.101'
     volumes:
       - './pihole/etc:/etc/pihole'
       - './pihole/dnsmasq:/etc/dnsmasq.d'
@@ -233,7 +234,6 @@ if [ $? -eq 0 ]; then
     echo -e "${GREEN}Strona powinna być dostępna pod adresem: http://$domain${NC}"
     echo -e "${GREEN}Unifi Controller dostępny pod: https://$server_ip:8443 (bezpośredni dostęp)${NC}"
     echo -e "${GREEN}Pi-hole dostępny pod: http://$server_ip:8888/admin (hasło: casiopea)${NC}"
-    echo -e "${GREEN}Pi-hole DNS dostępny na porcie 8053${NC}"
 
     # Sprawdzenie dostępu do UniFi
     echo -e "${YELLOW}Sprawdzanie statusu Unifi Controller (może wymagać czasu na uruchomienie)...${NC}"
