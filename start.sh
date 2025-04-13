@@ -85,9 +85,12 @@ mkdir -p pihole/dnsmasq
 if [ ! -f "docker-compose.yml" ]; then
     echo -e "${YELLOW}Plik docker-compose.yml nie istnieje. Tworzę domyślny plik...${NC}"
     cat > docker-compose.yml << EOF
+version: '3'
+
 services:
   nginx:
     image: nginx:alpine
+    container_name: cassiopeia-nginx
     ports:
       - "80:80"
       - "443:443"
@@ -104,6 +107,7 @@ services:
 
   php:
     image: php:8.2-fpm-alpine
+    container_name: cassiopeia-php
     volumes:
       - ./www:/usr/share/nginx/html
     restart: always
@@ -112,6 +116,7 @@ services:
 
   certbot:
     image: certbot/certbot
+    container_name: cassiopeia-certbot
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
@@ -246,7 +251,7 @@ if [ $? -eq 0 ]; then
     curl -I http://$ip_local || echo -e "${RED}Brak dostępu przez lokalne IP${NC}"
     
     # Sprawdzanie nazwy sieci kontenera
-    container_id=$(run_docker_compose ps -q nginx)
+    container_id=$(docker ps -q -f "name=cassiopeia-nginx")
     echo -e "\nID kontenera Nginx: $container_id"
     
     if [ -n "$container_id" ]; then
@@ -262,7 +267,7 @@ if [ $? -eq 0 ]; then
 
     # Sprawdź logi UniFi
     echo -e "\n${YELLOW}Sprawdzanie logów Unifi Controller:${NC}"
-    unifi_id=$(run_docker_compose ps -q unifi)
+    unifi_id=$(docker ps -q -f "name=cassiopeia-unifi-controller")
     if [ -n "$unifi_id" ]; then
         docker logs --tail 20 $unifi_id
     else
