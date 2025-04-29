@@ -1,0 +1,10 @@
+[
+  { "name": "Internet (CloudFlare)", "ip": "1.1.1.1" },
+  { "name": "Funbox Orange", "ip": "192.168.0.1" },
+  { "name": "Synology RS214", "ip": "192.168.0.3" },
+  { "name": "Drukarka ZEBRA", "ip": "192.168.0.90" },
+  { "name": "Drukarka Brother", "ip": "192.168.0.59" },
+  { "name": "USW-Flex-Mini SALKA", "ip": "192.168.0.202" },
+  { "name": "USW-Flex-Mini DOM", "ip": "192.168.0.201" },
+  { "name": "UAP-AC-Lite", "ip": "192.168.0.203" }
+]
